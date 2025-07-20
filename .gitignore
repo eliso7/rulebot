@@ -48,6 +48,7 @@ Thumbs.db
 # Project specific
 *.db
 *.log
+all_cards.json
 data/cards/*.json
 data/rules/*.txt
 data/training/*.json
