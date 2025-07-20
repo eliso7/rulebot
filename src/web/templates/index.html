@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Judge Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .chat-container {
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #4a5568;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f7fafc;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background: #e2e8f0;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.judge {
+            background: #4299e1;
+            color: white;
+        }
+
+        .message.error {
+            background: #f56565;
+            color: white;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+
+        #questionInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #questionInput:focus {
+            border-color: #4299e1;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 70px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .suggestion-item:hover {
+            background: #f7fafc;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        #askButton {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        #askButton:hover:not(:disabled) {
+            background: #3182ce;
+        }
+
+        #askButton:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .correction-panel {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .correction-panel h4 {
+            color: #c53030;
+            margin-bottom: 10px;
+        }
+
+        .correction-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .correction-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f7fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4299e1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .chat-container {
+                height: 500px;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .suggestions {
+                right: 0;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MTG Judge Engine</h1>
+            <p>Ask questions about Magic: The Gathering rules and get expert answers</p>
+        </div>
+
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>Judge Chat</h2>
+                    <p>Type your question below or search for a card name</p>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message judge">
+                        <strong>MTG Judge:</strong> Hello! I'm here to help you with Magic: The Gathering rules and card interactions. Ask me anything!
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" id="questionInput" placeholder="Ask about MTG rules or search for a card..." autocomplete="off">
+                        <button id="askButton">Ask</button>
+                        <div class="suggestions" id="suggestions"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats" id="stats">
+                <div class="stat">
+                    <div class="stat-number" id="cardCount">-</div>
+                    <div class="stat-label">Cards</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="ruleCount">-</div>
+                    <div class="stat-label">Rules</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="rulingCount">-</div>
+                    <div class="stat-label">Rulings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MTGJudgeInterface {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+                this.loadStats();
+            }
+
+            initializeElements() {
+                this.questionInput = document.getElementById('questionInput');
+                this.askButton = document.getElementById('askButton');
+                this.chatMessages = document.getElementById('chatMessages');
+                this.suggestions = document.getElementById('suggestions');
+            }
+
+            bindEvents() {
+                this.askButton.addEventListener('click', () => this.askQuestion());
+                this.questionInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.askQuestion();
+                });
+                this.questionInput.addEventListener('input', () => this.handleInput());
+                
+                // Hide suggestions when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.input-group')) {
+                        this.hideSuggestions();
+                    }
+                });
+            }
+
+            async handleInput() {
+                const query = this.questionInput.value.trim();
+                if (query.length < 2) {
+                    this.hideSuggestions();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/cards/suggestions?query=${encodeURIComponent(query)}&limit=5`);
+                    if (response.ok) {
+                        const suggestions = await response.json();
+                        this.showSuggestions(suggestions);
+                    }
+                } catch (error) {
+                    console.error('Error fetching suggestions:', error);
+                }
+            }
+
+            showSuggestions(suggestions) {
+                if (suggestions.length === 0) {
+                    this.hideSuggestions();
+                    return;
+                }
+
+                const html = suggestions.map(suggestion => 
+                    `<div class="suggestion-item" onclick="judgeInterface.selectSuggestion('${suggestion.replace(/'/g, "\\'")}')">${suggestion}</div>`
+                ).join('');
+
+                this.suggestions.innerHTML = html;
+                this.suggestions.style.display = 'block';
+            }
+
+            hideSuggestions() {
+                this.suggestions.style.display = 'none';
+            }
+
+            selectSuggestion(suggestion) {
+                this.questionInput.value = suggestion;
+                this.hideSuggestions();
+                this.questionInput.focus();
+            }
+
+            async askQuestion() {
+                const question = this.questionInput.value.trim();
+                if (!question) return;
+
+                this.addMessage(question, 'user');
+                this.questionInput.value = '';
+                this.hideSuggestions();
+                this.setLoading(true);
+
+                try {
+                    const response = await fetch('/api/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ question }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    this.addMessage(result.answer, 'judge', result);
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.addMessage('Sorry, I encountered an error processing your question. Please try again.', 'error');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            addMessage(text, type, fullResult = null) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+                
+                if (type === 'user') {
+                    messageDiv.innerHTML = `<strong>You:</strong> ${text}`;
+                } else if (type === 'judge') {
+                    messageDiv.innerHTML = `<strong>MTG Judge:</strong> ${text}`;
+                    
+                    if (fullResult) {
+                        // Add correction option
+                        const correctionPanel = this.createCorrectionPanel(fullResult.question, text);
+                        messageDiv.appendChild(correctionPanel);
+                    }
+                } else if (type === 'error') {
+                    messageDiv.innerHTML = `<strong>Error:</strong> ${text}`;
+                }
+
+                this.chatMessages.appendChild(messageDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            createCorrectionPanel(question, answer) {
+                const panel = document.createElement('div');
+                panel.className = 'correction-panel';
+                panel.style.display = 'none';
+
+                panel.innerHTML = `
+                    <h4>Submit Correction</h4>
+                    <textarea class="correction-input" placeholder="Enter the correct answer..."></textarea>
+                    <textarea class="correction-input" placeholder="Additional feedback (optional)..." style="min-height: 60px;"></textarea>
+                    <div class="correction-buttons">
+                        <button class="btn btn-primary" onclick="judgeInterface.submitCorrection(this, '${question.replace(/'/g, "\\'")}', '${answer.replace(/'/g, "\\'")}')">Submit</button>
+                        <button class="btn btn-secondary" onclick="this.closest('.correction-panel').style.display='none'">Cancel</button>
+                    </div>
+                `;
+
+                // Add toggle button
+                const toggleButton = document.createElement('button');
+                toggleButton.className = 'btn btn-secondary';
+                toggleButton.textContent = 'Correct Answer';
+                toggleButton.style.marginTop = '10px';
+                toggleButton.onclick = () => {
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                };
+
+                const container = document.createElement('div');
+                container.appendChild(toggleButton);
+                container.appendChild(panel);
+
+                return container;
+            }
+
+            async submitCorrection(button, question, originalAnswer) {
+                const panel = button.closest('.correction-panel');
+                const inputs = panel.querySelectorAll('.correction-input');
+                const correctedAnswer = inputs[0].value.trim();
+                const feedback = inputs[1].value.trim();
+
+                if (!correctedAnswer) {
+                    alert('Please enter a corrected answer.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/correct', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            question,
+                            original_answer: originalAnswer,
+                            corrected_answer: correctedAnswer,
+                            feedback: feedback || null
+                        }),
+                    });
+
+                    if (response.ok) {
+                        panel.style.display = 'none';
+                        this.addMessage('Thank you for the correction! This will help improve my answers.', 'judge');
+                    } else {
+                        throw new Error('Failed to submit correction');
+                    }
+                } catch (error) {
+                    console.error('Error submitting correction:', error);
+                    alert('Error submitting correction. Please try again.');
+                }
+            }
+
+            setLoading(loading) {
+                if (loading) {
+                    this.askButton.disabled = true;
+                    this.askButton.innerHTML = '<div class="loading"></div>';
+                } else {
+                    this.askButton.disabled = false;
+                    this.askButton.innerHTML = 'Ask';
+                }
+            }
+
+            async loadStats() {
+                try {
+                    const response = await fetch('/api/stats');
+                    if (response.ok) {
+                        const stats = await response.json();
+                        document.getElementById('cardCount').textContent = stats.cards.toLocaleString();
+                        document.getElementById('ruleCount').textContent = stats.rules.toLocaleString();
+                        document.getElementById('rulingCount').textContent = stats.rulings.toLocaleString();
+                    }
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                }
+            }
+        }
+
+        // Initialize the interface
+        const judgeInterface = new MTGJudgeInterface();
+    </script>
+</body>
+</html>

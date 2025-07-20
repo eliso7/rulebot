@@ -1,0 +1,1049 @@
+# MTG Judge Training Examples
+# Format: question, expected_answer, category, difficulty
+
+examples:
+  # Basic Combat
+  - question: "What happens when I cast Lightning Bolt targeting a creature with hexproof?"
+    expected_answer: "Lightning Bolt cannot target a creature with hexproof. Hexproof prevents the creature from being targeted by spells or abilities your opponents control. The spell will fail to have a legal target and will be countered by game rules."
+    category: "targeting"
+    difficulty: "basic"
+    key_cards: ["Lightning Bolt"]
+    key_rules: ["702.11"]
+
+  - question: "Can I target my own creatures with Lightning Bolt?"
+    expected_answer: "Yes, you can target your own creatures with Lightning Bolt. Lightning Bolt deals 3 damage to any target, and you control your own creatures, so they are legal targets."
+    category: "targeting"
+    difficulty: "basic"
+    key_cards: ["Lightning Bolt"]
+
+  - question: "Does first strike damage happen before regular combat damage?"
+    expected_answer: "Yes, first strike damage happens in the first strike combat damage step, which occurs before the regular combat damage step. Creatures with first strike deal their damage first."
+    category: "combat"
+    difficulty: "basic"
+    key_rules: ["702.7"]
+
+  - question: "If I attack with a 5/5 and my opponent blocks with a 2/2, what happens?"
+    expected_answer: "Your 5/5 creature will deal 5 damage to the 2/2, and the 2/2 will deal 2 damage to your 5/5. The 2/2 will be destroyed, and your 5/5 will survive with 2 damage marked on it until the end of the turn."
+    category: "combat"
+    difficulty: "basic"
+    key_rules: ["510.1"]
+
+  - question: "Can I block a creature with trample with multiple creatures?"
+    expected_answer: "Yes, you can block a creature with trample with multiple creatures. The attacking player must assign at least lethal damage to each blocking creature in order before assigning any remaining damage to the defending player."
+    category: "combat"
+    difficulty: "basic"
+    key_rules: ["702.19b"]
+
+  - question: "If a creature has flying, can it be blocked by a creature with reach?"
+    expected_answer: "Yes, a creature with flying can be blocked by a creature with reach. Reach specifically allows a creature to block creatures with flying."
+    category: "combat"
+    difficulty: "basic"
+    key_rules: ["702.17a"]
+
+  - question: "What happens if a creature attacks and the defending player has no creatures to block?"
+    expected_answer: "If the defending player has no creatures to block, the attacking creature is considered unblocked and will deal its combat damage directly to the defending player."
+    category: "combat"
+    difficulty: "basic"
+    key_rules: ["509.2"]
+
+  - question: "How does deathtouch work with trample?"
+    expected_answer: "When a creature with deathtouch and trample is blocked, its controller only needs to assign 1 point of damage to each blocking creature to be considered lethal damage. The remaining damage can then be assigned to the defending player."
+    category: "combat"
+    difficulty: "intermediate"
+    key_rules: ["702.2b", "702.19b"]
+
+  - question: "Can a creature with summoning sickness block?"
+    expected_answer: "Yes, a creature can block the turn it comes under your control. Summoning sickness only prevents it from attacking or using abilities with the tap or untap symbol."
+    category: "summoning_sickness"
+    difficulty: "basic"
+    key_rules: ["302.6"]
+
+  # Intermediate Rules
+  - question: "If I control Doubling Season and play a planeswalker, how many loyalty counters does it enter with?"
+    expected_answer: "The planeswalker will enter with double its printed loyalty counters due to Doubling Season's replacement effect. For example, a planeswalker that normally enters with 3 loyalty would enter with 6."
+    category: "replacement_effects"
+    difficulty: "intermediate"
+    key_cards: ["Doubling Season"]
+    key_rules: ["614.1c", "306.5b"]
+
+  - question: "Can I activate abilities of creatures with summoning sickness?"
+    expected_answer: "Yes, you can activate most abilities of creatures with summoning sickness. Summoning sickness only prevents creatures from attacking and using abilities with the tap symbol or untap symbol in their cost."
+    category: "summoning_sickness"
+    difficulty: "basic"
+    key_rules: ["302.6"]
+
+  - question: "What happens if I copy a spell with X in its mana cost?"
+    expected_answer: "When you copy a spell with X in its mana cost, the copy uses the same value of X that was chosen when the original spell was cast. You don't pay the mana cost again for the copy."
+    category: "copying"
+    difficulty: "intermediate"
+    key_rules: ["707.2", "107.3i"]
+
+  - question: "If my opponent casts a spell that says 'counter target spell', can I use a spell that gives my creature hexproof in response to save my creature spell?"
+    expected_answer: "No, giving your creature on the battlefield hexproof will not save your creature *spell* on the stack. Hexproof only protects permanents on the battlefield. You would need a spell that makes your spell unable to be countered, or another way to counter their counterspell."
+    category: "targeting"
+    difficulty: "intermediate"
+    key_rules: ["115.1c", "702.11c"]
+
+  - question: "What is the difference between an activated ability and a triggered ability?"
+    expected_answer: "An activated ability is written in the format '[Cost]: [Effect]' and can be activated by a player whenever they have priority. A triggered ability uses the words 'When,' 'Whenever,' or 'At' and automatically goes on the stack when its trigger condition is met."
+    category: "abilities"
+    difficulty: "basic"
+    key_rules: ["602.1", "603.1"]
+
+  - question: "Can I respond to a planeswalker's loyalty ability activation?"
+    expected_answer: "Yes, you can respond. Activating a loyalty ability uses the stack. After the ability is put on the stack, but before it resolves, players receive priority to cast spells and activate other abilities."
+    category: "planeswalkers"
+    difficulty: "intermediate"
+    key_rules: ["606.1"]
+
+  - question: "If a card says 'destroy all creatures,' does it destroy indestructible creatures?"
+    expected_answer: "No, an indestructible creature cannot be destroyed by effects that say 'destroy'. It can still be removed from the battlefield by other means, such as being exiled, being sacrificed, or having its toughness reduced to 0 or less."
+    category: "keyword_abilities"
+    difficulty: "basic"
+    key_rules: ["702.12b"]
+
+  # Stack and Priority
+  - question: "Can I respond to my own spell?"
+    expected_answer: "Yes, you can respond to your own spell. After you cast a spell, each player (starting with you) gets priority to cast spells or activate abilities before the original spell resolves."
+    category: "stack"
+    difficulty: "basic"
+    key_rules: ["117.3c"]
+
+  - question: "What happens to a spell if its target becomes illegal?"
+    expected_answer: "If all targets of a spell become illegal, the spell is countered by game rules and has no effect. If only some targets become illegal, the spell resolves but only affects the remaining legal targets."
+    category: "targeting"
+    difficulty: "intermediate"
+    key_rules: ["608.2b"]
+
+  - question: "If multiple triggered abilities I control trigger at the same time, in what order do they go on the stack?"
+    expected_answer: "If you control multiple triggered abilities that have triggered since the last time a player received priority, you choose the order to put them on the stack. This is often referred to as 'stacking your triggers'."
+    category: "stack"
+    difficulty: "intermediate"
+    key_rules: ["603.3b"]
+
+  - question: "What does it mean to 'hold priority'?"
+    expected_answer: "After you cast a spell or activate an ability, you receive priority again. 'Holding priority' means you perform another action (like casting another spell) before passing priority to your opponent, so your second spell will resolve before they get a chance to act on your first."
+    category: "priority"
+    difficulty: "intermediate"
+    key_rules: ["117.3c"]
+
+  - question: "Does sacrificing a creature as a cost use the stack?"
+    expected_answer: "No, paying costs does not use the stack. Sacrificing a creature as part of a cost happens immediately when you activate the ability or cast the spell. No player can respond to the sacrifice itself, only to the spell or ability that is now on the stack."
+    category: "costs"
+    difficulty: "intermediate"
+    key_rules: ["601.2h"]
+
+  # Complex Interactions
+  - question: "How does cascade work with split cards?"
+    expected_answer: "When you cascade, you compare the mana value of the spell with cascade to the mana values of the cards you exile. For a split card, you use its combined mana value while in the library. If the split card's mana value is less, you can cast either half without paying its mana cost."
+    category: "cascade"
+    difficulty: "advanced"
+    key_rules: ["702.85", "709.4"]
+
+  - question: "Can I choose the same mode twice for a modal spell like Cryptic Command?"
+    expected_answer: "No, unless the spell specifically says otherwise (e.g., 'Choose two. You may choose the same mode more than once'). Modal spells like Cryptic Command require you to choose different modes."
+    category: "modal_spells"
+    difficulty: "intermediate"
+    key_cards: ["Cryptic Command"]
+    key_rules: ["700.2"]
+
+  - question: "I cast Wrath of God. My opponent has a Selfless Spirit. In response, they sacrifice it. Do their creatures survive?"
+    expected_answer: "Yes. In response to Wrath of God, your opponent sacrifices their Selfless Spirit. The Spirit's ability resolves first, giving their other creatures indestructible. Then, Wrath of God resolves and fails to destroy the now indestructible creatures."
+    category: "stack"
+    difficulty: "intermediate"
+    key_cards: ["Wrath of God", "Selfless Spirit"]
+    key_rules: ["117.7"]
+
+  - question: "How does Yawgmoth's Will interact with casting spells from my graveyard?"
+    expected_answer: "Yawgmoth's Will allows you to play cards from your graveyard as though they were in your hand. A crucial part of the effect is that if a card would be put into your graveyard from anywhere this turn, it is exiled instead. This prevents you from repeatedly casting the same card."
+    category: "graveyard"
+    difficulty: "advanced"
+    key_cards: ["Yawgmoth's Will"]
+    key_rules: ["self-replacement effect on card"]
+
+  - question: "What is the difference between a copy of a permanent spell (like Clone) and a token copy (like from Kiki-Jiki, Mirror Breaker)?"
+    expected_answer: "A card like Clone becomes a copy of a creature as it enters the battlefield; its own characteristics are overwritten by the copiable values of the chosen creature. A token copy created by an ability like Kiki-Jiki's is a new object (a token) that is created with the copiable characteristics of the creature."
+    category: "copying"
+    difficulty: "advanced"
+    key_cards: ["Clone", "Kiki-Jiki, Mirror Breaker"]
+    key_rules: ["707.2", "707.3"]
+
+  # Triggered Abilities
+  - question: "When does a 'when this creature dies' trigger go on the stack?"
+    expected_answer: "The trigger goes on the stack the next time a player would receive priority after the creature has been put into the graveyard. This is usually immediately after the state-based action that caused it to die."
+    category: "triggered_abilities"
+    difficulty: "intermediate"
+    key_rules: ["603.2", "603.3"]
+
+  - question: "If my Solemn Simulacrum dies in combat at the same time as my opponent's creature, do I draw a card before the opponent's 'dies' trigger resolves?"
+    expected_answer: "Both 'dies' triggers go on the stack at the same time. Since it is your turn, your trigger is put on the stack first, followed by your opponent's. Your opponent's trigger will resolve first. You will draw your card after their trigger has resolved."
+    category: "stack"
+    difficulty: "intermediate"
+    key_cards: ["Solemn Simulacrum"]
+    key_rules: ["603.3b"]
+
+  - question: "If I miss a beneficial trigger (like gaining life), what happens?"
+    expected_answer: "A missed trigger is generally considered forgotten. If caught within a reasonable time frame and the trigger does not have a choice, a judge may put it on the stack. If it has a choice (like 'you may draw a card'), the opponent decides if the trigger is put on the stack. In casual play, players usually allow it."
+    category: "triggers"
+    difficulty: "intermediate"
+    key_rules: ["MTR 5.1"]
+
+  # State-Based Actions
+  - question: "What happens if I have 0 or negative life?"
+    expected_answer: "Having 0 or less life causes you to lose the game as a state-based action. This happens immediately before any player would receive priority. You cannot cast a spell to gain life in response."
+    category: "state_based_actions"
+    difficulty: "basic"
+    key_rules: ["704.5a"]
+
+  - question: "Can a creature with 0 toughness be saved by a pump spell like Giant Growth?"
+    expected_answer: "No. A creature with 0 or less toughness is put into its owner's graveyard as a state-based action. This happens before any player receives priority to cast spells, so you never have the chance to cast Giant Growth to save it."
+    category: "state_based_actions"
+    difficulty: "intermediate"
+    key_rules: ["704.5f", "117.5"]
+
+  - question: "If two legendary permanents with the same name are on the battlefield, what happens?"
+    expected_answer: "If a player controls two or more legendary permanents with the same name, that player chooses one and puts the rest into their owner's graveyards. This is a state-based action known as the 'legend rule'."
+    category: "state_based_actions"
+    difficulty: "basic"
+    key_rules: ["704.5j"]
+
+  # Replacement Effects
+  - question: "If I control multiple replacement effects that could apply to the same event, who chooses the order?"
+    expected_answer: "The player who is affected by the event or who controls the object affected by the event chooses the order in which to apply the replacement effects. This can be very strategic."
+    category: "replacement_effects"
+    difficulty: "advanced"
+    key_rules: ["616.1"]
+
+  - question: "What is the difference between a replacement effect and a triggered ability?"
+    expected_answer: "A replacement effect (using words like 'instead' or 'as this enters') modifies an event *as it happens* and does not use the stack. A triggered ability (using 'when,' 'whenever,' or 'at') creates an ability on the stack *after* an event has happened."
+    category: "replacement_effects"
+    difficulty: "intermediate"
+    key_rules: ["614", "603"]
+
+  - question: "If I would draw a card while I control both a Laboratory Maniac and an Abundance, what happens?"
+    expected_answer: "Since you control both replacement effects for drawing a card, you choose which one to apply. You can either replace the draw with Abundance's effect to look for a land or nonland, or you can apply Laboratory Maniac's effect, which, if you can't draw, causes you to win the game."
+    category: "replacement_effects"
+    difficulty: "advanced"
+    key_cards: ["Laboratory Maniac", "Abundance"]
+    key_rules: ["616.1"]
+
+  # Multiplayer (Commander)
+  - question: "What happens to permanents I control when I leave a multiplayer game?"
+    expected_answer: "When you leave a multiplayer game, all permanents you own leave the game with you. Spells and abilities you control on the stack are exiled. Any effects that gave you control of other players' permanents end."
+    category: "multiplayer"
+    difficulty: "intermediate"
+    key_rules: ["800.4a"]
+
+  - question: "How does commander damage work?"
+    expected_answer: "A player that has been dealt 21 or more combat damage by the same commander over the course of the game loses the game. This is a state-based action and is tracked separately for each commander."
+    category: "multiplayer"
+    difficulty: "basic"
+    key_rules: ["903.10a"]
+
+  - question: "If my commander is put into my graveyard, can I choose to put it back in the command zone?"
+    expected_answer: "Yes. If your commander would be put into your hand, library, graveyard or exile from anywhere, you may choose to move it to the command zone instead. This is a state-based action that you can apply as it changes zones."
+    category: "multiplayer"
+    difficulty: "basic"
+    key_rules: ["903.9"]
+
+  - question: "Does the 'commander tax' apply if I cast my commander from my hand?"
+    expected_answer: "No, the additional cost of two mana for each time you've cast your commander from the command zone only applies when casting it from the command zone. It does not apply if you cast it from your hand or any other zone."
+    category: "multiplayer"
+    difficulty: "intermediate"
+    key_rules: ["903.8"]
+
+  # Timing Restrictions
+  - question: "Can I play a land during my opponent's turn?"
+    expected_answer: "No, you can only play a land during one of your own main phases when you have priority and the stack is empty. You are also limited to one land play per turn unless an effect says otherwise."
+    category: "timing"
+    difficulty: "basic"
+    key_rules: ["305.1"]
+
+  - question: "When can I cast a sorcery?"
+    expected_answer: "You can normally cast a sorcery only during your own turn, during a main phase, when the stack is empty, and when you have priority. Some effects can grant sorceries flash, allowing you to cast them any time you could cast an instant."
+    category: "timing"
+    difficulty: "basic"
+    key_rules: ["307.1"]
+
+  - question: "What does the 'Flash' keyword do?"
+    expected_answer: "Flash is a keyword ability that allows you to cast a spell any time you could cast an instant. This means you can cast it during your opponent's turn, or in response to other spells or abilities."
+    category: "keyword_abilities"
+    difficulty: "basic"
+    key_rules: ["702.8a"]
+
+  # Layered Effects
+  - question: "If a creature gets +1/+1 and then becomes a 2/2, what are its final stats?"
+    expected_answer: "The creature will be a 3/3. Effects that set power and toughness (like making it a 2/2) are applied in layer 7b. Effects that modify power and toughness (like giving it +1/+1) are applied after that in layer 7c. So, it becomes a 2/2 first, and then gets +1/+1."
+    category: "layers"
+    difficulty: "advanced"
+    key_rules: ["613.3", "613.4"]
+
+  - question: "I enchant my Grizzly Bears (a 2/2) with an Aura that says 'Enchanted creature is blue'. Then my opponent plays a Blood Moon. What color is my creature?"
+    expected_answer: "Your creature is blue. The effect changing its color from the Aura is applied in Layer 5 (Color-changing effects). Blood Moon's ability only affects nonbasic lands and does not interact with the creature's color."
+    category: "layers"
+    difficulty: "advanced"
+    key_cards: ["Grizzly Bears", "Blood Moon"]
+    key_rules: ["613.1e"]
+
+  - question: "My creature is a 1/1. It is equipped with an artifact that gives it +2/+2. My opponent casts a spell making it a 0/1 until end of turn. Does it die?"
+    expected_answer: "No, it will be a 2/3. The effect setting its power/toughness to 0/1 is applied in layer 7b. The equipment's +2/+2 bonus is applied in layer 7c. So it becomes a 0/1, then gets +2/+2, making it a 2/3."
+    category: "layers"
+    difficulty: "advanced"
+    key_rules: ["613.3"]
+
+  # Equipment and Auras
+  - question: "What happens to equipment when the creature it's attached to dies?"
+    expected_answer: "The equipment becomes unattached when the creature it was equipping leaves the battlefield. The equipment itself remains on the battlefield, where you can pay its equip cost again to attach it to another creature you control."
+    category: "equipment"
+    difficulty: "basic"
+    key_rules: ["301.5c"]
+
+  - question: "What happens to an aura when its enchanted permanent becomes an illegal target or is destroyed?"
+    expected_answer: "If the permanent an Aura is attached to leaves the battlefield, the Aura is put into its owner's graveyard. Similarly, if the permanent is still on the battlefield but the Aura can no longer legally enchant it (e.g., due to protection), the Aura is put into its owner's graveyard as a state-based action."
+    category: "auras"
+    difficulty: "intermediate"
+    key_rules: ["704.5m", "704.5n"]
+
+  - question: "Can I respond to an 'equip' activation?"
+    expected_answer: "Yes, activating an equip ability uses the stack and can be responded to. For example, if your opponent pays to equip a creature, you can cast an instant to destroy either the equipment or the target creature before the equip ability resolves."
+    category: "equipment"
+    difficulty: "intermediate"
+    key_rules: ["702.6a"]
+
+  - question: "If I gain control of an equipped creature, do I gain control of the equipment?"
+    expected_answer: "No. You gain control of the creature, and the equipment remains attached to it, but your opponent still controls the equipment itself. This means they can activate the equipment's abilities, and if it becomes unattached, they can equip it to one of their own creatures."
+    category: "control"
+    difficulty: "intermediate"
+    key_rules: ["301.5d"]
+  - question: "How does 'double strike' work?"
+    expected_answer: "A creature with double strike deals combat damage twice. It deals damage during the first strike combat damage step along with other first strike creatures, and then again during the regular combat damage step."
+    category: "combat"
+    difficulty: "basic"
+    key_rules: ["702.4b"]
+
+  - question: "If my opponent attacks with a creature, and I block with my creature, can I then sacrifice my blocking creature for an ability before damage is dealt?"
+    expected_answer: "Yes, you can. After blockers are declared, there is a round of priority before the combat damage step. You can activate abilities at this time. The attacking creature remains blocked and, unless it has trample, will not deal combat damage to you."
+    category: "combat"
+    difficulty: "intermediate"
+    key_rules: ["509.1h"]
+
+  - question: "What does 'Protection from Red' actually do?"
+    expected_answer: "Protection from a quality (like a color) prevents a permanent from being Damaged, Enchanted/Equipped, Blocked, or Targeted by anything with that quality. This is often remembered by the acronym DEBT."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.16"]
+
+  - question: "Does 'Protection from Creatures' stop a creature from being destroyed by a board wipe like Wrath of God?"
+    expected_answer: "No. Wrath of God says 'Destroy all creatures.' It does not target, damage, block, or enchant anything, so protection does not apply. The creature will be destroyed."
+    category: "protection"
+    difficulty: "intermediate"
+    key_cards: ["Wrath of God"]
+    key_rules: ["702.16e"]
+
+  - question: "What is the difference between Shroud and Hexproof?"
+    expected_answer: "A permanent with Shroud cannot be the target of *any* spells or abilities, including your own. A permanent with Hexproof cannot be the target of spells or abilities *your opponents* control, but you can still target it."
+    category: "targeting"
+    difficulty: "basic"
+    key_rules: ["702.18a", "702.11c"]
+
+  - question: "Do mana abilities use the stack?"
+    expected_answer: "No, mana abilities do not use the stack and cannot be responded to. They resolve immediately. An ability is a mana ability if it doesn't target, could add mana to a player's mana pool, and isn't a loyalty ability."
+    category: "mana"
+    difficulty: "intermediate"
+    key_rules: ["605.1a"]
+
+  - question: "What happens when a spell with 'Split Second' is on the stack?"
+    expected_answer: "While a spell with Split Second is on the stack, players cannot cast other spells or activate abilities that are not mana abilities. Once it resolves, players can act again."
+    category: "keyword_abilities"
+    difficulty: "advanced"
+    key_rules: ["702.61a"]
+
+  - question: "What happens when a player has to draw a card from an empty library?"
+    expected_answer: "If a player is required to draw a card while their library is empty, they lose the game as a state-based action the next time a player would receive priority."
+    category: "state_based_actions"
+    difficulty: "basic"
+    key_rules: ["704.5b"]
+
+  - question: "How many poison counters cause a player to lose the game?"
+    expected_answer: "A player with ten or more poison counters loses the game as a state-based action. This is an alternative win condition for strategies using the 'Infect' or 'Toxic' keywords."
+    category: "state_based_actions"
+    difficulty: "basic"
+    key_rules: ["704.5c"]
+
+  - question: "What happens to a planeswalker if its loyalty is reduced to 0?"
+    expected_answer: "A planeswalker with zero loyalty counters is put into its owner's graveyard as a state-based action. This happens immediately and cannot be responded to."
+    category: "planeswalkers"
+    difficulty: "basic"
+    key_rules: ["704.5i"]
+
+  - question: "If Rest in Peace is on the battlefield, will a creature's 'dies' ability trigger?"
+    expected_answer: "No. Rest in Peace creates a replacement effect that exiles cards that would go to the graveyard. Since the creature card never hits the graveyard, it never technically 'dies', so 'dies' triggers will not occur."
+    category: "replacement_effects"
+    difficulty: "advanced"
+    key_cards: ["Rest in Peace"]
+    key_rules: ["614.6", "700.4"]
+
+  - question: "If I cast a creature for its Evoke cost, do I still get its 'enters the battlefield' ability?"
+    expected_answer: "Yes. When you cast a spell for its Evoke cost, the creature enters the battlefield, and its ETB ability triggers. Then, a separate triggered ability from Evoke triggers, requiring you to sacrifice it. You can respond to the sacrifice trigger while the ETB trigger is on the stack."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.74a"]
+
+  - question: "How do Vehicles work?"
+    expected_answer: "Vehicles are artifacts that are not initially creatures. They have a 'Crew' activated ability. By tapping any number of untapped creatures you control with total power equal to or greater than the crew number, the Vehicle becomes an artifact creature until end of turn."
+    category: "card_types"
+    difficulty: "basic"
+    key_rules: ["301.7a", "702.122a"]
+
+  - question: "What happens to a Saga after its final chapter ability resolves?"
+    expected_answer: "After the final chapter's ability resolves (or leaves the stack in any way), the controller of the Saga sacrifices it. This is a state-based action."
+    category: "card_types"
+    difficulty: "basic"
+    key_rules: ["714.4"]
+
+  - question: "If I cast the Adventure part of a creature card, where does the card go?"
+    expected_answer: "After you cast an Adventure spell, if it resolves, is countered, or leaves the stack in any other way, you exile it instead of putting it into your graveyard. You can then cast the creature from exile."
+    category: "card_types"
+    difficulty: "intermediate"
+    key_rules: ["708.8"]
+
+  - question: "I use Act of Treason to take my opponent's creature. Then I cast a spell giving it Hexproof. Who can target it?"
+    expected_answer: "You are the creature's controller for the turn. Hexproof prevents opponents of the creature's *controller* from targeting it. So your opponent, the creature's owner, cannot target it. You and your other opponents can."
+    category: "control"
+    difficulty: "advanced"
+    key_cards: ["Act of Treason"]
+    key_rules: ["702.11c"]
+
+  - question: "If I copy a kicked spell, is the copy kicked?"
+    expected_answer: "Yes. When you copy a spell on the stack, you copy the choices made when it was cast, including whether it was kicked and how many times. You don't get to make new choices for the copy."
+    category: "copying"
+    difficulty: "intermediate"
+    key_rules: ["707.2"]
+
+  - question: "What happens to the unspent mana in my mana pool when a phase ends?"
+    expected_answer: "Unless an effect states otherwise (like with Omnath, Locus of Mana), your mana pool empties at the end of each step and each phase. You cannot 'save' mana between phases."
+    category: "mana"
+    difficulty: "basic"
+    key_rules: ["106.4"]
+
+  - question: "What is the difference between the colorless mana symbol (◇) and a generic mana symbol (like ①)?"
+    expected_answer: "A generic mana symbol (①, ②, etc.) can be paid with mana of any type. The colorless mana symbol (◇) must be paid specifically with colorless mana, which is generated by sources like Wastes, Sol Ring, or certain utility lands."
+    category: "mana"
+    difficulty: "basic"
+    key_rules: ["107.4c", "107.4f"]
+
+  - question: "In Commander, can I have a card in my deck with a Phyrexian mana symbol that doesn't match my commander's color identity?"
+    expected_answer: "No. For the purposes of color identity, Phyrexian mana symbols are treated as the color of mana they represent. For example, a card with a blue Phyrexian mana symbol has a blue color identity and can only go in a deck with a commander that includes blue."
+    category: "multiplayer"
+    difficulty: "intermediate"
+    key_rules: ["903.4d"]
+
+  - question: "What happens when I 'flicker' (exile and then return to the battlefield) a creature?"
+    expected_answer: "When a creature is flickered, it's treated as a brand new object with no memory of its previous existence. It re-enters the battlefield untapped, without any counters or Auras that were on it, and it will have summoning sickness. Any 'enters the battlefield' abilities it has will trigger again."
+    category: "zones"
+    difficulty: "intermediate"
+    key_rules: ["400.7"]
+
+  - question: "What is the Mana Value (formerly Converted Mana Cost) of a token created by an effect?"
+    expected_answer: "Unless the effect that creates the token specifies its mana cost, the token has a mana value of 0."
+    category: "mana_value"
+    difficulty: "basic"
+    key_rules: ["202.3c"]
+
+  - question: "What is the Mana Value of a spell on the stack with X in its cost?"
+    expected_answer: "On the stack, X is treated as the value chosen for it when the spell was cast. For example, if you cast a spell with cost X and 2 red mana, and you chose X=3, its mana value on the stack is 5. Everywhere else (hand, library, graveyard), X is 0."
+    category: "mana_value"
+    difficulty: "intermediate"
+    key_rules: ["202.3e"]
+
+  - question: "How does the Undying keyword work?"
+    expected_answer: "When a creature with Undying and no +1/+1 counters on it dies, it returns to the battlefield under its owner's control with a +1/+1 counter on it."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.93a"]
+
+  - question: "What is the difference between Undying and Persist?"
+    expected_answer: "They are very similar, but Undying returns the creature with a +1/+1 counter and only works if it had no +1/+1 counters. Persist returns the creature with a -1/-1 counter and only works if it had no -1/-1 counters. They can work together, alternating back and forth."
+    category: "keyword_abilities"
+    difficulty: "advanced"
+    key_rules: ["702.93a", "702.79a"]
+
+  - question: "What does the 'Ward' keyword do?"
+    expected_answer: "Ward is a triggered ability. Whenever a permanent with ward becomes the target of a spell or ability an opponent controls, that spell or ability is countered unless its controller pays the ward cost."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.21a"]
+
+  - question: "If I cast Stifle targeting a Fetch Land's ability, what happens?"
+    expected_answer: "You can counter the activated ability of a fetch land like Polluted Delta. Stifle will counter the 'Sacrifice this: Search your library...' ability. The fetch land will remain in the graveyard (since sacrificing is part of the cost) and the player will not get to search for a land."
+    category: "activated_abilities"
+    difficulty: "advanced"
+    key_cards: ["Stifle", "Polluted Delta"]
+    key_rules: ["602.1"]
+
+  - question: "How does Morph work?"
+    expected_answer: "You can cast a card with morph face down as a 2/2 creature for 3 generic mana. It has no name, creature types, or abilities. You can turn it face up any time you have priority by paying its morph cost, which is an action that does not use the stack."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.37"]
+
+  - question: "Can a face-down creature be the target of a spell that says 'Destroy target non-Human creature'?"
+    expected_answer: "Yes. A face-down creature has no creature types, so it is a 'non-Human creature' and is a legal target for that spell."
+    category: "targeting"
+    difficulty: "advanced"
+    key_rules: ["708.2c"]
+
+  - question: "What is the 'Monarch' and how do you become it?"
+    expected_answer: "The Monarch is a designation a player can have. You become the Monarch by playing a card that says so, or by dealing combat damage to the player who is currently the Monarch. At the beginning of the Monarch's end step, that player draws a card."
+    category: "multiplayer"
+    difficulty: "basic"
+    key_rules: ["721.1"]
+
+  - question: "If I gain control of a spell on the stack, who is affected by 'you' on the card?"
+    expected_answer: "If you gain control of a spell, you now control it. Any instance of the word 'you' on that spell now refers to you, not the original caster. You make any choices for the spell."
+    category: "control"
+    difficulty: "advanced"
+    key_rules: ["109.5"]
+
+  - question: "How does Lifelink work?"
+    expected_answer: "Lifelink is a static ability. Damage dealt by a source with lifelink causes its controller to gain that much life. This happens simultaneously with the damage being dealt, not as a separate trigger."
+    category: "keyword_abilities"
+    difficulty: "basic"
+    key_rules: ["702.15b"]
+
+  - question: "If a 3/3 with Lifelink is blocked by a 2/2, how much life do I gain?"
+    expected_answer: "You gain 3 life. The creature deals its full power in combat damage to the blocking creature, even if that's more than enough to destroy it. The full amount of damage dealt is counted for lifelink."
+    category: "lifelink"
+    difficulty: "intermediate"
+    key_rules: ["702.15b"]
+
+  - question: "My opponent casts a spell that gives me an extra turn after this one. Then I cast a spell that gives me an extra turn after this one. In what order do the extra turns happen?"
+    expected_answer: "Extra turns are taken in the reverse order they were created. The turn from your spell (the most recently created one) will happen first, followed by the turn from your opponent's spell."
+    category: "turns"
+    difficulty: "advanced"
+    key_rules: ["500.7"]
+
+  - question: "What does an effect like 'End the turn' do?"
+    expected_answer: "An 'End the turn' effect exiles all spells and abilities on the stack. The current player discards down to their maximum hand size. Damage and 'until end of turn' effects are removed. The turn then moves to the cleanup step. Any 'at the beginning of the end step' triggers are skipped."
+    category: "turns"
+    difficulty: "advanced"
+    key_rules: ["719.1"]
+
+  - question: "What is the difference between exiling a card and destroying it?"
+    expected_answer: "'Destroy' specifically means to move a permanent from the battlefield to the graveyard. 'Exile' means to move a card to the exile zone from anywhere. Indestructible creatures are immune to 'destroy' effects but can still be exiled."
+    category: "zones"
+    difficulty: "basic"
+    key_rules: ["701.7", "701.10"]
+
+  - question: "Can a single creature block two different attackers?"
+    expected_answer: "No, a creature can only block one attacking creature. However, some creatures have abilities that say 'This creature can block an additional N creatures'."
+    category: "combat"
+    difficulty: "basic"
+    key_rules: ["509.1a"]
+
+  - question: "If a spell says 'Damage can't be prevented', does that stop an Indestructible creature from being destroyed by damage?"
+    expected_answer: "No. Indestructibility is a replacement effect that says 'If this permanent would be destroyed, instead it isn't.' It doesn't prevent the damage itself. Lethal damage will still be marked on the creature, but the rule that would destroy it doesn't apply."
+    category: "damage"
+    difficulty: "advanced"
+    key_rules: ["702.12b", "615.1"]
+
+  - question: "What is the Color Identity of a card like Bomat Courier in Commander?"
+    expected_answer: "Bomat Courier's color identity is Red. Although its mana cost is colorless, it has a red mana symbol in its rules text. Color identity is determined by all mana symbols on the card."
+    category: "multiplayer"
+    difficulty: "intermediate"
+    key_cards: ["Bomat Courier"]
+    key_rules: ["903.4"]
+
+  - question: "How does the Companion mechanic work?"
+    expected_answer: "If your starting deck meets the companion's condition, you may begin the game with that card in your sideboard. Once per game, you may pay 3 generic mana to put your companion from your sideboard into your hand. This is a special action you can only do as a sorcery."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.139"]
+
+  - question: "What does it mean to 'mill' a player?"
+    expected_answer: "To 'mill' a player is to put a certain number of cards from the top of their library directly into their graveyard. This is a keyword action based on the card Millstone."
+    category: "keyword_actions"
+    difficulty: "basic"
+    key_rules: ["701.14a"]
+
+  - question: "What does an Annihilator trigger do?"
+    expected_answer: "Annihilator is a triggered ability that triggers when a creature with it attacks. The defending player must sacrifice the specified number of permanents. This happens before blockers are declared."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.86a"]
+
+  - question: "If I cast a spell 'without paying its mana cost', what is its mana value?"
+    expected_answer: "The mana value of the spell is still determined by its mana cost printed in the top corner, even if you didn't pay it. If the spell has an X in its cost, X is considered 0 in this case."
+    category: "mana_value"
+    difficulty: "intermediate"
+    key_rules: ["202.3b", "107.3k"]
+
+  - question: "Does a creature that enters the battlefield tapped still have summoning sickness?"
+    expected_answer: "Yes. All creatures have summoning sickness the turn they come under your control, unless they have haste. Being tapped or untapped doesn't change this."
+    category: "summoning_sickness"
+    difficulty: "basic"
+    key_rules: ["302.6"]
+
+  - question: "My opponent controls Elesh Norn, Grand Cenobite, which gives my creatures -2/-2. I play a creature that is normally a 2/2. What happens?"
+    expected_answer: "Your 2/2 creature enters the battlefield and Elesh Norn's static ability immediately applies to it, making it a 0/0. It is then put into the graveyard as a state-based action before you get priority. Its 'enters the battlefield' ability will still trigger."
+    category: "layers"
+    difficulty: "intermediate"
+    key_cards: ["Elesh Norn, Grand Cenobite"]
+    key_rules: ["613.3c", "704.5f"]
+
+  - question: "How does Foretell work?"
+    expected_answer: "During your turn, you can pay 2 generic mana and exile a card with foretell from your hand face down. On a future turn, you can cast that card from exile by paying its foretell cost, even if it's not your turn if the spell is an instant."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.143a"]
+
+  - question: "What is the mana value of a split card like Fire // Ice in the graveyard?"
+    expected_answer: "In any zone other than the stack, the mana value of a split card is the sum of the mana values of its two halves. For Fire // Ice, the mana cost is 1R + 1U, so its mana value is 4."
+    category: "mana_value"
+    difficulty: "advanced"
+    key_cards: ["Fire // Ice"]
+    key_rules: ["709.4b"]
+
+  - question: "When I cast a spell with Cascade, do I have to cast the spell I find?"
+    expected_answer: "No, you don't have to. After you exile cards until you find one with a lower mana value, you may choose to cast it without paying its mana cost. If you choose not to, you put it on the bottom of your library with the other exiled cards in a random order."
+    category: "cascade"
+    difficulty: "intermediate"
+    key_rules: ["702.85a"]
+
+  - question: "If a creature has 'can't be blocked except by Walls,' can a creature that is both a Wall and a Soldier block it?"
+    expected_answer: "Yes. As long as the blocking creature has the required creature type (Wall), it can legally block, regardless of any other creature types it might have."
+    category: "combat"
+    difficulty: "basic"
+    key_rules: ["509.1b"]
+
+  - question: "If an effect creates a token that's a copy of a creature, does the token also copy any Auras or Equipment attached to the original creature?"
+    expected_answer: "No. The copy effect only copies the 'copiable values' of the original creature. This is typically what's printed on the card, as modified by other copy effects, 'as this enters the battlefield' abilities, and mutate. It does not copy counters, Auras, Equipment, or temporary effects."
+    category: "copying"
+    difficulty: "intermediate"
+    key_rules: ["707.2"]
+
+  - question: "What happens when an ability triggers 'at the beginning of the next end step'?"
+    expected_answer: "The ability triggers at the beginning of the very next end step to occur, regardless of whose turn it is. If the effect is created during an end step, it will wait until the beginning of the following turn's end step."
+    category: "triggers"
+    difficulty: "intermediate"
+    key_rules: ["513.2"]
+
+  - question: "Can I activate an ability of a card in my graveyard?"
+    expected_answer: "Only if the ability specifically says you can, or if it can only be activated from that zone. For example, abilities like Flashback, Unearth, or an ability that says 'You may exile this card from your graveyard:' can be activated from the graveyard."
+    category: "zones"
+    difficulty: "intermediate"
+    key_rules: ["113.6"]
+
+  - question: "If I have an enchantment that says 'Creatures you control get +1/+1', and then I play a creature, when does it get the bonus?"
+    expected_answer: "It gets the bonus immediately. The +1/+1 effect is from a static ability that continuously applies to all creatures you control. As soon as the creature enters the battlefield under your control, it gets the bonus. This does not use the stack."
+    category: "static_abilities"
+    difficulty: "basic"
+    key_rules: ["604.1"]
+
+  - question: "How does the 'Phasing' keyword work?"
+    expected_answer: "When a permanent phases out, it's treated as though it doesn't exist. It's removed from the game along with any counters, Auras, and Equipment attached to it. It phases back in at the beginning of its controller's untap step, before they untap their permanents. When it phases back in, it does not trigger 'enters the battlefield' abilities."
+    category: "keyword_abilities"
+    difficulty: "advanced"
+    key_rules: ["702.26"]
+
+  - question: "If a token phases out, what happens to it?"
+    expected_answer: "The token ceases to exist as a state-based action immediately after it phases out. It will not phase back in."
+    category: "phasing"
+    difficulty: "advanced"
+    key_rules: ["704.5d"]
+
+  - question: "What does the 'Banding' keyword allow an attacking creature to do?"
+    expected_answer: "When attacking, any number of creatures with banding (and one without) can form a 'band'. This band attacks as a group. If any creature in the band becomes blocked, all creatures in the band are blocked by that same creature or creatures. The key advantage is that the attacking player, not the defending player, decides how combat damage is assigned by the blocking creatures to the attackers."
+    category: "keyword_abilities"
+    difficulty: "expert"
+    key_rules: ["702.22j"]
+
+  - question: "How does Banding work on defense?"
+    expected_answer: "A creature with banding can block an attacking creature along with any number of other creatures. This 'band' of blockers works together. The advantage is that the defending player, not the attacking player, decides how the attacking creature's combat damage is assigned among the blockers."
+    category: "keyword_abilities"
+    difficulty: "expert"
+    key_rules: ["702.22k"]
+
+  - question: "How does the 'Flanking' keyword work?"
+    expected_answer: "Whenever a creature with flanking is blocked by a creature without flanking, the blocking creature gets -1/-1 until end of turn. This effect happens before combat damage is dealt."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.25a"]
+
+  - question: "How does the 'Suspend' mechanic work?"
+    expected_answer: "Rather than cast the spell, you can pay its suspend cost to exile it with a number of time counters on it. At the beginning of your upkeep, you remove a time counter. When the last counter is removed, you cast the spell without paying its mana cost. If it's a creature, it has haste."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.62a"]
+
+  - question: "What is the mana value of a card that is suspended in exile?"
+    expected_answer: "The card's mana value is what is printed on the card. The suspend cost does not affect its mana value. For example, a card with mana cost 5 and Suspend 2 for one red mana still has a mana value of 5 while it is suspended."
+    category: "mana_value"
+    difficulty: "intermediate"
+    key_rules: ["202.3"]
+
+  - question: "How does the 'Rebound' keyword work?"
+    expected_answer: "If you cast a spell with rebound from your hand, you exile it as it resolves instead of putting it into your graveyard. Then, at the beginning of your next upkeep, you may cast the spell again from exile without paying its mana cost."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.88a"]
+
+  - question: "How does the 'Mutate' mechanic work?"
+    expected_answer: "You can cast a mutate spell for its mutate cost, targeting a non-Human creature you own. When it resolves, you choose to put it on top of or under the target. The resulting permanent is a single creature with the characteristics of the top card, plus the abilities of all cards underneath it."
+    category: "keyword_abilities"
+    difficulty: "advanced"
+    key_cards: []
+    key_rules: ["702.140"]
+
+  - question: "If a mutated creature leaves the battlefield, what happens to the cards that formed it?"
+    expected_answer: "If a mutated creature leaves the battlefield, all of its component cards go to the appropriate zone. For example, if it dies, all the cards are put into the graveyard. If it's returned to its owner's hand, all cards are returned to the owner's hand."
+    category: "mutate"
+    difficulty: "intermediate"
+    key_rules: ["723.4"]
+
+  - question: "How does the 'Madness' keyword work?"
+    expected_answer: "If you discard a card with madness, you exile it instead of putting it into your graveyard. This triggers an ability that allows you to cast the spell from exile for its madness cost. If you don't cast it, it's put into your graveyard."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.35a"]
+
+  - question: "How does the 'Dredge' ability work?"
+    expected_answer: "Dredge is a replacement effect. If you would draw a card and have a card with dredge in your graveyard, you can instead mill the specified number of cards and return the card with dredge to your hand."
+    category: "keyword_abilities"
+    difficulty: "advanced"
+    key_rules: ["702.52a"]
+
+  - question: "Does a 'Landfall' ability trigger if I put a land onto the battlefield with an effect, not as my land for the turn?"
+    expected_answer: "Yes. Landfall triggers whenever a land enters the battlefield under your control for any reason, whether it's your normal land play or an effect from a spell or ability."
+    category: "triggered_abilities"
+    difficulty: "basic"
+    key_rules: ["603.1"]
+
+  - question: "How does the 'Storm' keyword work?"
+    expected_answer: "Storm is a triggered ability that triggers when you cast the spell. When it triggers, you copy the spell for each other spell that was cast before it this turn. If the storm spell has targets, you can choose new targets for each copy."
+    category: "keyword_abilities"
+    difficulty: "advanced"
+    key_rules: ["702.40a"]
+
+  - question: "How does 'Affinity for Artifacts' reduce a spell's cost?"
+    expected_answer: "Affinity reduces the generic mana portion of a spell's cost. For each permanent of the specified type (e.g., artifacts) you control, the spell costs one generic mana less to cast. It cannot reduce the colored mana requirement."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.41a"]
+
+  - question: "How does the 'Modular' ability work?"
+    expected_answer: "A creature with Modular enters the battlefield with a specified number of +1/+1 counters. When it dies, you may put all of its +1/+1 counters on a target artifact creature."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_cards: ["Arcbound Ravager"]
+    key_rules: ["702.43"]
+
+  - question: "What does the 'Scry' keyword action do?"
+    expected_answer: "To 'Scry N' means to look at the top N cards of your library. You may then put any number of them on the bottom of your library in any order and the rest on top in any order."
+    category: "keyword_actions"
+    difficulty: "basic"
+    key_rules: ["701.18a"]
+
+  - question: "Does a creature with 'Devoid' count as a colored spell for effects that care about colored spells?"
+    expected_answer: "No. A card with Devoid is colorless, regardless of the mana in its mana cost. It will not trigger abilities that look for a colored spell being cast."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.114a"]
+
+  - question: "How does 'Entwine' work on a modal spell?"
+    expected_answer: "Entwine is an additional cost. If you pay the entwine cost for a modal spell, you choose all of the spell's modes instead of just one. You then follow the instructions for all modes in the order they are written on the card."
+    category: "modal_spells"
+    difficulty: "intermediate"
+    key_rules: ["702.42a"]
+
+  - question: "What does the 'Epic' keyword do?"
+    expected_answer: "When you cast a spell with Epic, for the rest of the game, you cannot cast any other spells. At the beginning of each of your upkeeps for the rest of the game, you copy the epic spell and may cast the copy without paying its mana cost."
+    category: "keyword_abilities"
+    difficulty: "advanced"
+    key_rules: ["702.50a"]
+
+  - question: "How does 'Delve' help cast a spell?"
+    expected_answer: "While casting a spell with delve, you may exile any number of cards from your graveyard. For each card exiled this way, the spell's cost is reduced by one generic mana."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.66a"]
+
+  - question: "How does the 'Convoke' keyword work?"
+    expected_answer: "Convoke allows you to tap your creatures to help pay for the spell. Each creature you tap while casting the spell pays for one generic mana or one mana of that creature's color. You can tap creatures with summoning sickness for convoke."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.51a"]
+
+  - question: "How does the 'Living Weapon' ability work?"
+    expected_answer: "When an Equipment with Living Weapon enters the battlefield, its controller creates a 0/0 black Phyrexian Germ creature token, then attaches the Equipment to it. This happens before any player receives priority."
+    category: "triggered_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.92a"]
+
+  - question: "When can I cast a spell for its 'Miracle' cost?"
+    expected_answer: "You can cast a card for its miracle cost if it's the first card you've drawn in a turn and you reveal it immediately. The miracle trigger goes on the stack, and if it resolves, you can then cast the spell for its reduced cost."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.94a"]
+
+  - question: "How does the 'Soulbond' keyword work?"
+    expected_answer: "You may pair a creature with soulbond with another unpaired creature when either enters the battlefield. They remain paired as long as you control both. A creature's soulbond ability grants an effect to both creatures, but only while they are paired."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.95a"]
+
+  - question: "How does 'Bestow' work?"
+    expected_answer: "You can cast a card with bestow as an Aura, enchanting a creature. If the enchanted creature leaves the battlefield, the bestow card ceases to be an Aura, becomes a creature again, and remains on the battlefield. You can also cast it normally as a creature."
+    category: "keyword_abilities"
+    difficulty: "advanced"
+    key_rules: ["702.103"]
+
+  - question: "What does the 'Prowess' keyword trigger on?"
+    expected_answer: "Prowess triggers whenever you cast a noncreature spell. When it triggers, the creature with prowess gets +1/+1 until end of turn. This triggers on instants, sorceries, artifacts, enchantments, and planeswalkers."
+    category: "triggered_abilities"
+    difficulty: "basic"
+    key_rules: ["702.108a"]
+
+  - question: "How does the 'Myriad' keyword work in a multiplayer game?"
+    expected_answer: "When a creature with myriad attacks, for each opponent other than the defending player, you may create a token that's a copy of that creature, tapped and attacking that opponent or a planeswalker they control. The tokens are exiled at the end of combat."
+    category: "multiplayer"
+    difficulty: "intermediate"
+    key_rules: ["702.116a"]
+
+  - question: "How does 'Emerge' reduce a spell's cost?"
+    expected_answer: "You can cast a spell for its emerge cost by sacrificing a creature. When you do, you reduce the emerge cost by the mana value of the sacrificed creature. You must still pay any remaining cost, including the colored mana."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.119a"]
+
+  - question: "What is the choice for the 'Fabricate' keyword?"
+    expected_answer: "When a creature with 'Fabricate N' enters the battlefield, you may either put N +1/+1 counters on it, or create N 1/1 colorless Servo artifact creature tokens."
+    category: "triggered_abilities"
+    difficulty: "basic"
+    key_rules: ["702.123a"]
+
+  - question: "How do you cast the 'Aftermath' half of a split card?"
+    expected_answer: "A split card with aftermath can be cast from your graveyard for its aftermath cost. You cannot cast the aftermath half from your hand. After casting it from the graveyard, the card is exiled."
+    category: "card_types"
+    difficulty: "intermediate"
+    key_rules: ["709.6"]
+
+  - question: "What does the 'Afflict' keyword do?"
+    expected_answer: "Afflict is a triggered ability. When a creature with 'Afflict N' becomes blocked, the defending player loses N life. This triggers and resolves before combat damage is dealt."
+    category: "triggered_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.128a"]
+
+  - question: "What is the difference between Embalm and Eternalize?"
+    expected_answer: "Both are activated abilities from the graveyard that create a token copy of the creature, then exile the original card. Embalm creates a white Zombie token that is otherwise a copy of the creature. Eternalize creates a 4/4 black Zombie token that is otherwise a copy of the creature."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.129", "702.130"]
+
+  - question: "How do you get 'The City's Blessing' for the 'Ascend' mechanic?"
+    expected_answer: "You get the City's Blessing if you control ten or more permanents and a spell or ability you control resolves that checks for ascend. Once you have the City's Blessing, you have it for the rest of the game, even if your permanent count drops below ten."
+    category: "keyword_abilities"
+    difficulty: "basic"
+    key_rules: ["702.132"]
+
+  - question: "How does 'Jump-start' let me cast a card from my graveyard?"
+    expected_answer: "You can cast a card with jump-start from your graveyard by paying its mana cost and as an additional cost, discarding a card. After the spell is cast this way, it is exiled."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.134a"]
+
+  - question: "What is the condition for casting a spell for its 'Spectacle' cost?"
+    expected_answer: "You can cast a spell for its spectacle cost rather than its mana cost if an opponent lost life this turn. The damage does not need to be combat damage."
+    category: "alternate_costs"
+    difficulty: "basic"
+    key_rules: ["702.135a"]
+
+  - question: "What is the choice with the 'Riot' keyword?"
+    expected_answer: "A creature with riot enters the battlefield with your choice of either a +1/+1 counter or haste."
+    category: "keyword_abilities"
+    difficulty: "basic"
+    key_rules: ["702.136a"]
+
+  - question: "How does the 'Escape' mechanic work?"
+    expected_answer: "Escape allows you to cast a card from your graveyard by paying its escape cost and exiling a specified number of other cards from your graveyard. The escape cost is an alternative cost."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.138a"]
+
+  - question: "When can I activate a 'Boast' ability?"
+    expected_answer: "You can activate a boast ability of a creature only if that creature has attacked this turn, and only once per turn. You can activate it any time after the creature was declared as an attacker."
+    category: "activated_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.142a"]
+
+  - question: "What is the condition for the 'Coven' ability word?"
+    expected_answer: "Coven abilities check if you control three or more creatures with different powers. If you do, the ability will have an effect or a greater effect."
+    category: "ability_words"
+    difficulty: "basic"
+    key_rules: ["Pseudo-keyword, check card"]
+
+  - question: "What does the 'Decayed' keyword mean on a creature token?"
+    expected_answer: "A creature with decayed can't block. When it attacks, it is sacrificed at the end of the combat step."
+    category: "keyword_abilities"
+    difficulty: "basic"
+    key_rules: ["702.146a"]
+
+  - question: "How does the 'Training' keyword trigger?"
+    expected_answer: "Training is a triggered ability. Whenever a creature with training attacks with another creature that has greater power, you put a +1/+1 counter on the creature with training."
+    category: "triggered_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.147a"]
+
+  - question: "How does the 'Enlist' keyword work?"
+    expected_answer: "As you attack with a creature with enlist, you may tap another untapped creature you control that isn't attacking. If you do, the enlisted creature's power becomes equal to the total power of both creatures until end of turn."
+    category: "keyword_abilities"
+    difficulty: "intermediate"
+    key_rules: ["702.152a"]
+
+  - question: "What happens if a spell requires a target, but I don't have a legal target to choose?"
+    expected_answer: "You cannot cast a spell or activate an ability that requires a target unless you can choose a legal target for it. The action of casting or activating is illegal."
+    category: "targeting"
+    difficulty: "basic"
+    key_rules: ["601.2c"]
+
+  - question: "What is a 'state trigger'?"
+    expected_answer: "A state trigger is a triggered ability that triggers when a game state is true, rather than when an event occurs. For example, 'At the beginning of your upkeep, if you control no lands...'. These triggers will not trigger again until they have left the stack and the condition becomes true again."
+    category: "triggers"
+    difficulty: "advanced"
+    key_rules: ["603.8"]
+
+  - question: "I control a Blood Moon and an Urborg, Tomb of Yawgmoth. What are my nonbasic lands?"
+    expected_answer: "This is a layer interaction. In layer 4 (Type-changing effects), Urborg makes all lands into Swamps in addition to their other types. Then, Blood Moon makes all nonbasic lands into just Mountains. Because Urborg's effect is applied first due to dependency, it makes a land a Swamp, then Blood Moon's effect overwrites that, making it a Mountain. Your nonbasics will be non-Swamp Mountains."
+    category: "layers"
+    difficulty: "expert"
+    key_cards: ["Blood Moon", "Urborg, Tomb of Yawgmoth"]
+    key_rules: ["613.7"]
+
+  - question: "Can I use Stifle to counter someone casting a spell for its Miracle cost?"
+    expected_answer: "Yes, but you have to be precise. You cannot counter the casting of the spell itself. Miracle is a triggered ability that triggers when you draw the card. You can cast Stifle targeting this trigger. If you do, it will be countered and the player will not get permission to cast the spell for its miracle cost."
+    category: "triggers"
+    difficulty: "advanced"
+    key_cards: ["Stifle"]
+    key_rules: ["702.94a"]
+
+  - question: "What happens to Auras attached to a permanent that gets protection from the Aura's color?"
+    expected_answer: "The Aura will be put into its owner's graveyard as a state-based action. A permanent with protection from a color cannot be enchanted by Auras of that color. Since it's now an illegal attachment, the Aura falls off."
+    category: "protection"
+    difficulty: "intermediate"
+    key_rules: ["702.16c", "704.5n"]
+
+  - question: "What does it mean to 'Goad' a creature in multiplayer?"
+    expected_answer: "A goaded creature must attack each combat if able, and must attack a player other than the player who goaded it, if able. The creature remains goaded until your next turn begins."
+    category: "multiplayer"
+    difficulty: "intermediate"
+    key_rules: ["724.1"]
+
+  - question: "Can I generate mana of a color outside my commander's color identity?"
+    expected_answer: "Yes, you can. If an effect would produce mana of a color not in your commander's identity, it produces that mana. The old rule that turned it into colorless mana was removed in 2016."
+    category: "multiplayer"
+    difficulty: "basic"
+    key_rules: ["903.9"]
+
+  - question: "What happens if a creature with damage marked on it is flickered?"
+    expected_answer: "The creature that returns to the battlefield is a new object with no memory of its previous existence. It will have no damage marked on it."
+    category: "zones"
+    difficulty: "basic"
+    key_rules: ["400.7"]
+
+  - question: "I control Opalescence and Humility. What are my other enchantments?"
+    expected_answer: "This is a complex layer interaction with a dependency loop. Opalescence makes enchantments into creatures based on their mana cost. Humility makes creatures into 1/1s and removes their abilities. Because their effects apply in the same layer (4, 6, and 7b) and are dependent on each other, they are applied in timestamp order. If Opalescence entered first, your other enchantments become creatures, then Humility makes them 1/1s with no abilities. If Humility entered first, it removes Opalescence's ability before it can apply, so your other enchantments remain as normal enchantments."
+    category: "layers"
+    difficulty: "expert"
+    key_cards: ["Opalescence", "Humility"]
+    key_rules: ["613.7", "613.8"]
+
+  - question: "My opponent casts a spell with Split Second. Can I turn my face-down creature face up using its morph ability in response?"
+    expected_answer: "Yes, you can. Turning a creature face up via its morph ability is a special action that does not use the stack. Split Second only prevents players from casting spells or activating abilities that are not mana abilities. Since morph is neither, you are allowed to do it."
+    category: "special_actions"
+    difficulty: "expert"
+    key_rules: ["702.37d", "702.61a"]
+
+  - question: "What happens if I flicker a melded permanent like Brisela, Voice of Nightmares?"
+    expected_answer: "When Brisela is exiled, it ceases to be a single permanent. The two individual cards that formed it (Bruna, the Fading Light and Gisela, the Broken Blade) are exiled. Then, they are returned to the battlefield as separate, un-melded permanents. Both of their 'enters the battlefield' abilities will trigger."
+    category: "zones"
+    difficulty: "expert"
+    key_cards: ["Brisela, Voice of Nightmares"]
+    key_rules: ["712.11"]
+
+  - question: "I cast Act of Treason on my opponent's creature, which has a 'when this creature dies' ability. I then sacrifice it. Who gets the 'dies' trigger?"
+    expected_answer: "You do. The 'dies' ability triggers from the battlefield. Since you controlled the creature at the moment it died, you control the trigger and will get its effect. The card goes to its owner's (your opponent's) graveyard, but you controlled the ability."
+    category: "control"
+    difficulty: "advanced"
+    key_cards: ["Act of Treason"]
+    key_rules: ["603.3d"]
+
+  - question: "I control a Leyline of the Void and a Rest in Peace. An opponent's creature dies. What happens?"
+    expected_answer: "This is a situation with two replacement effects (yours and your opponent's if they own the creature) attempting to replace the same event. The player who controls the affected object (the creature) gets to choose which replacement effect to apply. If they choose your Leyline, it's exiled. If they choose Rest in Peace, it's exiled. In this specific case, the result is the same, but with different replacement effects, the choice could matter."
+    category: "replacement_effects"
+    difficulty: "expert"
+    key_cards: ["Leyline of the Void", "Rest in Peace"]
+    key_rules: ["616.1"]
+
+  - question: "How does the 'Haunt' keyword work when the haunted creature is flickered?"
+    expected_answer: "When a creature is flickered (exiled and returned), it re-enters the battlefield as a new object with no memory of its previous existence. The Haunt ability from the card in exile is no longer associated with it, as the permanent it was haunting has ceased to exist. The haunt ability will not trigger again."
+    category: "keyword_abilities"
+    difficulty: "expert"
+    key_rules: ["702.55", "400.7"]
+
+  - question: "What are the characteristics of a face-down instant or sorcery card in exile (e.g., from a Foretell or Suspend effect)?"
+    expected_answer: "A face-down card in exile has no characteristics other than that it's a face-down card in exile. It has no name, no mana cost, no mana value, no color, and no card types. This is different from a face-down creature on the battlefield, which is a 2/2 creature."
+    category: "zones"
+    difficulty: "advanced"
+    key_rules: ["708.2a"]
+
+  - question: "I cast a spell with Epic, like Enduring Ideal. On my next turn, I cast a spell from my graveyard using its Flashback cost. What happens?"
+    expected_answer: "You cannot cast the spell using Flashback. Epic's restriction ('For the rest of the game, you can't cast spells') is absolute. It doesn't matter what zone you are attempting to cast from or if you are using an alternate cost. You simply cannot cast any spells other than the copies created by the Epic ability."
+    category: "keyword_abilities"
+    difficulty: "expert"
+    key_cards: ["Enduring Ideal"]
+    key_rules: ["702.50a"]
+
+  - question: "What happens if a spell or ability targets a 'card in a graveyard', and in response, that card is removed from the graveyard?"
+    expected_answer: "The spell or ability will be countered on resolution due to having an illegal target. The rule for this is often called 'fizzling'. The target 'card in a graveyard' no longer exists in that zone, so the spell has no legal target."
+    category: "targeting"
+    difficulty: "advanced"
+    key_rules: ["608.2b"]
+
+  - question: "My opponent controls a Chalice of the Void with one counter. I cast a spell with Suspend that has a mana value of 1 (like Ancestral Vision). When the last time counter is removed, does Chalice counter it?"
+    expected_answer: "No. When you cast a spell from suspend, you are casting it without paying its mana cost. However, its mana value is still what is printed on the card (0 for Ancestral Vision, 1 for something like Rift Bolt). Because you are casting a spell with mana value 1, Chalice of the Void will trigger and counter it."
+    category: "suspend"
+    difficulty: "expert"
+    key_cards: ["Chalice of the Void", "Ancestral Vision"]
+    key_rules: ["702.62a"]
+    note: "Ancestral Vision has a mana value of 0, so it would not be countered. Rift Bolt has a mana value of 3 and would not be countered. A card like Hypergenesis would be countered as its mana value is 0. A better example would be a suspended spell with MV 1 being countered by a Chalice on 1."
+
+  - question: "What is the result of using a 'text-changing effect' like Mind Bend on a card like Story Circle, changing 'red' to 'blue', if there is a 'color-changing effect' making a red source blue?"
+    expected_answer: "Text-changing effects are applied in Layer 3. Color-changing effects are applied in Layer 5. The text of Story Circle is changed to 'protection from blue' first. Then, in a later layer, the red source becomes blue. Because the source is now blue, the modified Story Circle can now grant protection from it."
+    category: "layers"
+    difficulty: "expert"
+    key_cards: ["Mind Bend", "Story Circle"]
+    key_rules: ["613.1c", "613.1e"]
+
+  - question: "If I am at 1 life and I cast a spell that causes me to gain 2 life and lose 2 life (like a resolved Swords to Plowshares on my own creature), do I lose the game?"
+    expected_answer: "No. All parts of a spell's effect happen sequentially as written. If the spell says 'You gain 2 life, then you lose 2 life', you will go to 3 life, then down to 1 life. You are never at 0 or less life during the resolution, so the state-based action to make you lose the game is never checked."
+    category: "resolution"
+    difficulty: "advanced"
+    key_rules: ["608.2c"]
+
+  - question: "How does the 'Transfigure' ability work and how is it different from Transmute?"
+    expected_answer: "Transfigure is an activated ability you can only use as a sorcery. You pay its cost and sacrifice the creature. Then you search your library for a creature card with the same mana value and put it onto the battlefield. Transmute is an activated ability from your hand that lets you discard the card to search your library for a card with the same mana value and put it into your hand."
+    category: "keyword_abilities"
+    difficulty: "expert"
+    key_rules: ["702.71a"]
+
+  - question: "If an effect creates a copy of a double-faced card, what does the copy look like?"
+    expected_answer: "A copy of a double-faced card copies only the face that is currently showing. If you copy the front face, the copy does not have a back face and cannot be transformed. If an effect copies a transformed back face, the copy is a single-faced permanent with the characteristics of that back face."
+    category: "copying"
+    difficulty: "expert"
+    key_rules: ["707.8a"]
+
+  - question: "In a multiplayer game, if a player loses the game, what happens to triggered abilities from their permanents that are on the stack?"
+    expected_answer: "When a player leaves the game, all objects they own leave the game, and all spells and abilities they control on the stack are exiled. The triggers from their permanents are removed from the stack and will not resolve."
+    category: "multiplayer"
+    difficulty: "expert"
+    key_rules: ["800.4c"]

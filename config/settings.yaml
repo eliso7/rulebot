@@ -1,0 +1,40 @@
+# MTG Judge Engine Configuration
+
+# Database settings
+database:
+  url: "sqlite:///mtg_judge.db"
+  echo: false
+
+# LLM settings
+llm:
+  type: "ollama"
+  ollama:
+    model_name: "qwen:7b"  # Or your preferred model
+    base_url: "http://localhost:11434"
+    temperature: 0.7
+
+# DSPy settings
+dspy:
+  optimization:
+    enabled: false
+    metric: "accuracy"
+    max_bootstrapped_demos: 10
+    max_labeled_demos: 5
+
+# Web server settings
+web:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+
+# Data ingestion settings
+data:
+  batch_size: 1000
+  cards_file: "all_cards.json"
+  rulings_file: "rulings.json"
+  rules_file: "rules"
+
+# Logging settings
+logging:
+  level: "INFO"
+  format: "{time} | {level} | {message}"
