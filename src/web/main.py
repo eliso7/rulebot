@@ -2,14 +2,11 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional, Generator
+from typing import List, Dict, Any, Optional
 import os
-import json
-import re
 from pathlib import Path
-from loguru import logger
 
 from ..database.queries import DatabaseQueries
 from ..llm.qwen import QwenLLM
@@ -54,10 +51,6 @@ class CorrectionRequest(BaseModel):
 class CardSearchRequest(BaseModel):
     query: str
     limit: Optional[int] = 20
-
-
-class ChatRequest(BaseModel):
-    question: str
 
 
 @app.on_event("startup")
@@ -157,13 +150,7 @@ async def shutdown_event():
 # Routes
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Chat interface."""
-    return templates.TemplateResponse("chat.html", {"request": request})
-
-
-@app.get("/old", response_class=HTMLResponse)
-async def old_home(request: Request):
-    """Old home page."""
+    """Home page."""
     return templates.TemplateResponse("index.html", {"request": request})
 
 
@@ -178,76 +165,6 @@ async def ask_question(request: QuestionRequest) -> Dict[str, Any]:
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/chat/stream")
-async def stream_chat(request: ChatRequest) -> StreamingResponse:
-    """Stream a chat response with real-time token generation."""
-    if not judge_engine:
-        raise HTTPException(status_code=500, detail="Judge engine not initialized")
-    
-    def generate_response():
-        try:
-            # Get streaming response from judge engine
-            stream_generator = judge_engine.answer_question(request.question, stream=True)
-            
-            current_section = "thinking"  # Start with thinking phase
-            accumulated_text = ""
-            
-            for chunk in stream_generator:
-                chunk_type = chunk.get("type", "")
-                content = chunk.get("content", "")
-                
-                if chunk_type == "token":
-                    accumulated_text += content
-                    
-                    # Detect if we're in thinking section (look for <think> tags)
-                    if "<think>" in accumulated_text.lower() and current_section == "thinking":
-                        # We're still in thinking mode, stream as thinking
-                        yield f"data: {json.dumps({'type': 'thinking', 'content': content})}\n\n"
-                    elif "</think>" in accumulated_text.lower() and current_section == "thinking":
-                        # End of thinking section, switch to answer mode
-                        current_section = "answer"
-                        # Don't stream the </think> tag
-                        continue
-                    elif current_section == "answer":
-                        # We're in answer mode, stream as answer
-                        # Clean up function calls from token content
-                        if not re.match(r'function_call:', content.strip()):
-                            yield f"data: {json.dumps({'type': 'answer', 'content': content})}\n\n"
-                    else:
-                        # Default to answer if no thinking tags detected
-                        if not re.match(r'function_call:', content.strip()):
-                            yield f"data: {json.dumps({'type': 'answer', 'content': content})}\n\n"
-                
-                elif chunk_type == "complete":
-                    # Final processing and cleanup
-                    response = chunk.get("response")
-                    if response:
-                        # Signal completion with metadata
-                        yield f"data: {json.dumps({'type': 'done', 'tokens_used': response.tokens_used})}\n\n"
-                    else:
-                        yield f"data: {json.dumps({'type': 'done'})}\n\n"
-                    break
-                
-                elif chunk_type == "error":
-                    yield f"data: {json.dumps({'type': 'error', 'content': content})}\n\n"
-                    break
-            
-        except Exception as e:
-            logger.error(f"Error in streaming endpoint: {e}")
-            error_chunk = {"type": "error", "content": str(e)}
-            yield f"data: {json.dumps(error_chunk)}\n\n"
-    
-    return StreamingResponse(
-        generate_response(),
-        media_type="text/plain",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "Content-Type": "text/event-stream",
-        }
-    )
 
 
 
