@@ -9,8 +9,9 @@ import os
 from pathlib import Path
 
 from ..database.queries import DatabaseQueries
-from ..llm.remote import create_llm
-from ..dspy_tools.judge_engine import AdaptiveJudgeEngine
+from ..llm.qwen import QwenLLM
+from ..judge.engine import MTGJudgeEngine
+from ..rag.vector_store import FAISSVectorStore
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -32,6 +33,7 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 # Global instances
 db_queries = None
 judge_engine = None
+vector_store = None
 
 
 # Pydantic models
@@ -53,41 +55,32 @@ class CardSearchRequest(BaseModel):
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database and LLM on startup."""
-    global db_queries, judge_engine
-    
-    # Load configuration
-    from ..config import get_config
-    config = get_config()
+    """Initialize database, vector store, and LLM on startup."""
+    global db_queries, judge_engine, vector_store
     
     # Initialize database
     db_queries = DatabaseQueries()
     
-    # Initialize LLM based on configuration
-    llm_config = config.get_llm_config()
-    llm_type = llm_config.get("type", "local")
+    # Initialize vector store
+    vector_store = FAISSVectorStore()
     
+    # Load data into vector store if empty
+    if vector_store.get_stats()["total_documents"] == 0:
+        await _populate_vector_store()
+    
+    # Initialize Qwen LLM
     try:
-        if llm_type == "local":
-            local_config = llm_config.get("local", {})
-            llm = create_llm("local", **local_config)
-        elif llm_type == "ollama":
-            ollama_config = llm_config.get("ollama", {})
-            llm = create_llm("ollama", **ollama_config)
-        elif llm_type == "openai":
-            openai_config = llm_config.get("openai", {})
-            llm = create_llm("openai", **openai_config)
-        elif llm_type == "anthropic":
-            anthropic_config = llm_config.get("anthropic", {})
-            llm = create_llm("anthropic", **anthropic_config)
-        else:
-            raise ValueError(f"Unknown LLM type: {llm_type}")
+        llm = QwenLLM(
+            model_name="Qwen/Qwen3-8B",
+            temperature=0.7,
+            max_tokens=2000
+        )
         
         if not llm.is_available():
-            raise RuntimeError(f"LLM type '{llm_type}' is configured but not available")
+            raise RuntimeError("Qwen model is not available")
             
     except Exception as e:
-        print(f"Warning: Could not initialize LLM '{llm_type}': {e}")
+        print(f"Warning: Could not initialize Qwen LLM: {e}")
         # Create a dummy LLM for development
         from ..llm.base import BaseLLM, LLMResponse
         
@@ -98,21 +91,60 @@ async def startup_event():
                     model_name="dummy"
                 )
             
+            def generate_with_tools(self, prompt: str, tools: List[Dict[str, Any]]) -> LLMResponse:
+                return self.generate(prompt)
+            
             def is_available(self) -> bool:
                 return True
         
         llm = DummyLLM("dummy")
     
     # Initialize judge engine
-    judge_engine = AdaptiveJudgeEngine(db_queries, llm)
+    judge_engine = MTGJudgeEngine(llm, vector_store)
+
+
+async def _populate_vector_store():
+    """Populate vector store with data from database."""
+    global vector_store, db_queries
+    
+    if not db_queries or not vector_store:
+        return
+    
+    try:
+        # Load rules
+        rules = db_queries.get_all_rules()
+        if rules:
+            vector_store.add_rules(rules)
+            logger.info(f"Added {len(rules)} rules to vector store")
+        
+        # Load cards (limit to avoid memory issues)
+        cards = db_queries.get_all_cards(limit=10000)  
+        if cards:
+            vector_store.add_cards(cards)
+            logger.info(f"Added {len(cards)} cards to vector store")
+        
+        # Load rulings
+        rulings = db_queries.get_all_rulings(limit=5000)
+        if rulings:
+            vector_store.add_rulings(rulings)
+            logger.info(f"Added {len(rulings)} rulings to vector store")
+        
+        # Save the populated index
+        vector_store.save_index()
+        logger.info("Vector store populated and saved")
+        
+    except Exception as e:
+        logger.error(f"Error populating vector store: {e}")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Clean up on shutdown."""
-    global db_queries
+    global db_queries, vector_store
     if db_queries:
         db_queries.close()
+    if vector_store:
+        vector_store.save_index()
 
 
 # Routes
@@ -135,22 +167,6 @@ async def ask_question(request: QuestionRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/correct")
-async def submit_correction(request: CorrectionRequest) -> Dict[str, bool]:
-    """Submit a correction for training."""
-    if not judge_engine:
-        raise HTTPException(status_code=500, detail="Judge engine not initialized")
-    
-    try:
-        success = judge_engine.submit_correction(
-            request.question,
-            request.original_answer,
-            request.corrected_answer,
-            request.feedback
-        )
-        return {"success": success}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/cards/search")
@@ -229,13 +245,22 @@ async def search_rulings(query: str, limit: int = 20) -> List[Dict[str, Any]]:
 
 @app.get("/api/stats")
 async def get_stats() -> Dict[str, Any]:
-    """Get database statistics."""
+    """Get database and vector store statistics."""
     if not db_queries:
         raise HTTPException(status_code=500, detail="Database not initialized")
     
     try:
-        stats = db_queries.get_stats()
-        return stats
+        db_stats = db_queries.get_stats()
+        
+        # Add vector store stats if available
+        if vector_store:
+            vector_stats = vector_store.get_stats()
+            return {
+                "database": db_stats,
+                "vector_store": vector_stats
+            }
+        
+        return {"database": db_stats}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

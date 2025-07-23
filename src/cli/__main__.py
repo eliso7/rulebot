@@ -11,8 +11,9 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.database.setup import main as setup_db
 from src.database.queries import DatabaseQueries
-from src.llm.remote import create_llm
-from src.dspy_tools.judge_engine import AdaptiveJudgeEngine
+from src.llm.qwen import QwenLLM
+from src.judge.engine import MTGJudgeEngine
+from src.rag.vector_store import FAISSVectorStore
 
 
 @click.group()
@@ -44,9 +45,9 @@ def serve():
 
 @cli.command()
 @click.option("--query", "-q", help="Query to test")
-@click.option("--llm-type", default="local", help="LLM type (local, openai, anthropic, ollama)")
-@click.option("--model", help="Model name to use")
-def test(query, llm_type, model):
+@click.option("--model", default="Qwen/Qwen3-8B", help="Model name to use")
+@click.option("--stream/--no-stream", default=True, help="Enable streaming output")
+def test(query, model, stream):
     """Test the judge engine with a query."""
     if not query:
         query = "What happens when I cast Lightning Bolt targeting a creature with hexproof?"
@@ -57,22 +58,21 @@ def test(query, llm_type, model):
         # Initialize database
         db_queries = DatabaseQueries()
         
-        # Initialize LLM
-        llm_kwargs = {}
-        if model:
-            llm_kwargs["model_name"] = model
+        # Initialize vector store
+        vector_store = FAISSVectorStore()
         
-        llm = create_llm(llm_type, **llm_kwargs)
+        # Initialize Qwen LLM
+        llm = QwenLLM(model_name=model)
         
         if not llm.is_available():
-            logger.error(f"LLM type '{llm_type}' is not available")
+            logger.error(f"Qwen model '{model}' is not available")
             return
         
         # Initialize judge engine
-        judge_engine = AdaptiveJudgeEngine(db_queries, llm)
+        judge_engine = MTGJudgeEngine(llm, vector_store)
         
         # Test query
-        result = judge_engine.answer_question(query)
+        result = judge_engine.answer_question(query, stream=stream)
         
         # Print results
         print("\n" + "="*50)
@@ -80,11 +80,8 @@ def test(query, llm_type, model):
         print("="*50)
         print(f"Answer: {result['answer']}")
         
-        if result.get('classification'):
-            print(f"\nClassification: {result['classification']}")
-        
-        if result.get('validation'):
-            print(f"\nValidation: {result['validation']}")
+        if result.get('context_used'):
+            print(f"\nContext Used: {len(result['context_used'])} sources")
         
         print("="*50)
         
@@ -93,6 +90,57 @@ def test(query, llm_type, model):
         
     except Exception as e:
         logger.error(f"Test failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+@cli.command()
+def populate():
+    """Populate the vector store with data from the database."""
+    logger.info("Populating vector store...")
+    
+    try:
+        # Initialize database and vector store
+        db_queries = DatabaseQueries()
+        vector_store = FAISSVectorStore()
+        
+        # Clear existing data
+        vector_store.clear()
+        
+        # Load rules
+        logger.info("Loading rules...")
+        rules = db_queries.get_all_rules()
+        if rules:
+            vector_store.add_rules(rules)
+            logger.info(f"Added {len(rules)} rules")
+        
+        # Load cards (limit to avoid memory issues)
+        logger.info("Loading cards...")
+        cards = db_queries.get_all_cards(limit=10000)
+        if cards:
+            vector_store.add_cards(cards)
+            logger.info(f"Added {len(cards)} cards")
+        
+        # Load rulings
+        logger.info("Loading rulings...")
+        rulings = db_queries.get_all_rulings(limit=5000)
+        if rulings:
+            vector_store.add_rulings(rulings)
+            logger.info(f"Added {len(rulings)} rulings")
+        
+        # Save the index
+        vector_store.save_index()
+        
+        # Show final stats
+        stats = vector_store.get_stats()
+        print(f"\nVector store populated successfully!")
+        print(f"Total documents: {stats['total_documents']}")
+        print(f"Type breakdown: {stats['type_counts']}")
+        
+        db_queries.close()
+        
+    except Exception as e:
+        logger.error(f"Error populating vector store: {e}")
         import traceback
         traceback.print_exc()
 

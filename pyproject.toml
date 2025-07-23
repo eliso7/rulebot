@@ -8,7 +8,6 @@ authors = [
 dependencies = [
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
-    "dspy-ai>=2.4.0",
     "sqlalchemy>=2.0.0",
     "alembic>=1.12.0",
     "pydantic>=2.5.0",
@@ -20,8 +19,10 @@ dependencies = [
     "numpy>=1.24.0",
     "torch>=2.1.0",
     "transformers>=4.35.0",
+    "accelerate>=0.20.0",
+    "flash-attn>=2.0.0",
     "sentence-transformers>=2.2.0",
-    "chromadb>=0.4.0",
+    "faiss-cpu>=1.7.4",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0.0",
     "click>=8.1.0",
@@ -110,6 +111,9 @@ omit = [
     "*/venv/*",
     "*/__pycache__/*",
 ]
+
+[tool.uv]
+no-build-isolation-package = ['flash-attn', 'setuptools']
 
 [project.scripts]
 mtg-judge = "src.cli:main"

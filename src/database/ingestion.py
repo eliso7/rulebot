@@ -231,7 +231,7 @@ class DataIngestion:
     
     def load_all_data(self, data_dir: Path):
         """Load all data from the data directory."""
-        cards_file = data_dir / "all_cards.json"
+        cards_file = data_dir / "oracle-cards-20250722211118.json"
         rulings_file = data_dir / "rulings.json" 
         rules_file = data_dir / "rules"
         
