@@ -69,8 +69,15 @@ class QwenLLM(BaseLLM):
             self.model = None
             raise
     
-    def generate(self, prompt: str, tools: Optional[List[Dict[str, Any]]] = None, stream: bool = False, **kwargs) -> LLMResponse:
+    def generate(self, prompt: str, tools: Optional[List[Dict[str, Any]]] = None, stream: bool = False, **kwargs):
         """Generate response from prompt with optional tool calling."""
+        if stream:
+            return self._generate_streaming(prompt, tools, **kwargs)
+        else:
+            return self._generate_non_streaming(prompt, tools, **kwargs)
+    
+    def _generate_non_streaming(self, prompt: str, tools: Optional[List[Dict[str, Any]]] = None, **kwargs) -> LLMResponse:
+        """Generate non-streaming response."""
         if not self.model or not self.tokenizer:
             return LLMResponse(
                 text="Error: Model not loaded",
@@ -89,14 +96,6 @@ class QwenLLM(BaseLLM):
                 max_length=2048
             ).to(self.device)
             
-            # Generate with optional streaming
-            if stream:
-                from transformers import TextStreamer
-                streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
-                print("Response: ", end="", flush=True)
-            else:
-                streamer = None
-            
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
@@ -107,11 +106,7 @@ class QwenLLM(BaseLLM):
                     top_k=20,
                     pad_token_id=self.tokenizer.eos_token_id,
                     eos_token_id=self.tokenizer.eos_token_id,
-                    streamer=streamer,
                 )
-            
-            if stream:
-                print()  # New line after streaming
             
             # Decode response
             response = self.tokenizer.decode(
@@ -140,6 +135,123 @@ class QwenLLM(BaseLLM):
                 text=f"Error: {str(e)}",
                 model_name=self.model_name
             )
+    
+    def _generate_streaming(self, prompt: str, tools: Optional[List[Dict[str, Any]]] = None, **kwargs):
+        """Generate streaming response as a generator yielding tokens in real-time."""
+        if not self.model or not self.tokenizer:
+            yield {
+                "type": "error",
+                "content": "Error: Model not loaded"
+            }
+            return
+        
+        try:
+            # Format the prompt for Qwen
+            formatted_prompt = self._format_prompt(prompt, tools)
+            
+            # Tokenize
+            inputs = self.tokenizer(
+                formatted_prompt,
+                return_tensors="pt",
+                truncation=True,
+                max_length=2048
+            ).to(self.device)
+            
+            # Track generated content
+            full_response = ""
+            generated_ids = inputs.input_ids.clone()
+            past_key_values = None
+            
+            # Generate token by token
+            for step in range(self.max_tokens):
+                with torch.no_grad():
+                    # Generate next token
+                    if past_key_values is None:
+                        outputs = self.model(generated_ids)
+                    else:
+                        # Use cached past key values for efficiency
+                        outputs = self.model(
+                            generated_ids[:, -1:], 
+                            past_key_values=past_key_values, 
+                            use_cache=True
+                        )
+                    
+                    # Cache the key values for next iteration
+                    past_key_values = outputs.past_key_values
+                    logits = outputs.logits[:, -1, :]
+                    
+                    # Apply temperature and sampling
+                    if self.temperature > 0:
+                        logits = logits / self.temperature
+                        # Apply top-p and top-k filtering
+                        if hasattr(self, 'top_p') and self.top_p < 1.0:
+                            sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+                            cumulative_probs = torch.cumsum(torch.softmax(sorted_logits, dim=-1), dim=-1)
+                            sorted_indices_to_remove = cumulative_probs > 0.8  # top_p
+                            sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+                            sorted_indices_to_remove[..., 0] = 0
+                            indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+                            logits[indices_to_remove] = float('-inf')
+                        
+                        # Top-k filtering
+                        if hasattr(self, 'top_k') and self.top_k > 0:
+                            top_k = min(20, logits.size(-1))  # safety check
+                            indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
+                            logits[indices_to_remove] = float('-inf')
+                        
+                        probs = torch.softmax(logits, dim=-1)
+                        next_token = torch.multinomial(probs, num_samples=1)
+                    else:
+                        next_token = torch.argmax(logits, dim=-1, keepdim=True)
+                    
+                    # Check for EOS token
+                    if next_token.item() == self.tokenizer.eos_token_id:
+                        break
+                    
+                    # Add the new token to generated sequence
+                    generated_ids = torch.cat([generated_ids, next_token], dim=1)
+                    
+                    # Decode the new token and add to response
+                    try:
+                        new_token_text = self.tokenizer.decode(next_token[0], skip_special_tokens=True)
+                        full_response += new_token_text
+                        
+                        # Yield the token immediately for real-time streaming
+                        yield {
+                            "type": "token",
+                            "content": new_token_text,
+                            "full_response": full_response,
+                            "step": step
+                        }
+                    except Exception as decode_error:
+                        logger.warning(f"Token decode error: {decode_error}")
+                        continue
+            
+            # Parse tool calls if tools were provided
+            tool_calls = []
+            if tools and "function_call:" in full_response:
+                tool_calls = self._parse_tool_calls(full_response)
+            
+            # Yield final response with metadata
+            yield {
+                "type": "complete",
+                "response": LLMResponse(
+                    text=full_response,
+                    model_name=self.model_name,
+                    tokens_used=generated_ids.shape[1] - inputs.input_ids.shape[1],
+                    metadata={
+                        "tool_calls": tool_calls,
+                        "temperature": self.temperature
+                    }
+                )
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in streaming generation: {e}")
+            yield {
+                "type": "error", 
+                "content": f"Error: {str(e)}"
+            }
     
     def _format_prompt(self, prompt: str, tools: Optional[List[Dict[str, Any]]] = None) -> str:
         """Format prompt for Qwen with optional tool definitions."""
