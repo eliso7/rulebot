@@ -13,7 +13,7 @@ class MTGJudgeEngine:
         self.vector_store = vector_store
         self.tools = vector_store.get_retrieval_tools()
     
-    def answer_question(self, question: str, stream: bool = False) -> Dict[str, Any]:
+    def answer_question(self, question: str, stream: bool = False):
         """Answer a Magic: The Gathering judge question."""
         try:
             # Create system prompt for MTG judging
@@ -22,38 +22,93 @@ class MTGJudgeEngine:
             # Combine system prompt with user question
             full_prompt = f"{system_prompt}\n\nUser Question: {question}"
             
-            # Generate response with tools
-            response = self.llm.generate_with_tools(full_prompt, self.tools, stream=stream)
-            
-            # Process tool calls if present
-            final_answer = response.text
-            context_used = {}
-            
-            if response.metadata and response.metadata.get("tool_calls"):
-                tool_results = self._execute_tool_calls(response.metadata["tool_calls"])
+            if stream:
+                # Return streaming generator
+                return self._answer_question_streaming(full_prompt, question)
+            else:
+                # Generate response with tools (non-streaming)
+                response = self.llm.generate_with_tools(full_prompt, self.tools, stream=False)
                 
-                if tool_results:
-                    # Re-prompt with tool results
-                    context_prompt = self._format_context_prompt(question, tool_results)
-                    context_response = self.llm.generate(context_prompt, stream=stream)
-                    final_answer = context_response.text
-                    context_used = tool_results
-            
-            return {
-                "question": question,
-                "answer": final_answer,
-                "context_used": context_used,
-                "model_name": response.model_name,
-                "tokens_used": response.tokens_used
-            }
+                # Process tool calls if present
+                final_answer = response.text
+                context_used = {}
+                
+                if response.metadata and response.metadata.get("tool_calls"):
+                    tool_results = self._execute_tool_calls(response.metadata["tool_calls"])
+                    
+                    if tool_results:
+                        # Re-prompt with tool results
+                        context_prompt = self._format_context_prompt(question, tool_results)
+                        context_response = self.llm.generate(context_prompt, stream=False)
+                        final_answer = context_response.text
+                        context_used = tool_results
+                
+                return {
+                    "question": question,
+                    "answer": final_answer,
+                    "context_used": context_used,
+                    "model_name": response.model_name,
+                    "tokens_used": response.tokens_used
+                }
             
         except Exception as e:
             logger.error(f"Error answering question: {e}")
-            return {
-                "question": question,
-                "answer": f"I encountered an error processing your question: {str(e)}",
-                "error": True,
-                "context_used": {}
+            if stream:
+                def error_generator():
+                    yield {
+                        "type": "error",
+                        "content": f"I encountered an error processing your question: {str(e)}"
+                    }
+                return error_generator()
+            else:
+                return {
+                    "question": question,
+                    "answer": f"I encountered an error processing your question: {str(e)}",
+                    "error": True,
+                    "context_used": {}
+                }
+    
+    def _answer_question_streaming(self, full_prompt: str, question: str):
+        """Handle streaming response generation."""
+        try:
+            # First generate initial response with tools
+            stream_generator = self.llm.generate_with_tools(full_prompt, self.tools, stream=True)
+            
+            accumulated_response = ""
+            tool_calls = []
+            
+            # Process the streaming response
+            for chunk in stream_generator:
+                if chunk.get("type") == "token":
+                    accumulated_response += chunk.get("content", "")
+                    yield chunk
+                elif chunk.get("type") == "complete":
+                    response = chunk.get("response")
+                    if response and response.metadata and response.metadata.get("tool_calls"):
+                        tool_calls = response.metadata["tool_calls"]
+                        break
+                elif chunk.get("type") == "error":
+                    yield chunk
+                    return
+            
+            # If we have tool calls, execute them and generate follow-up response
+            if tool_calls:
+                tool_results = self._execute_tool_calls(tool_calls)
+                
+                if tool_results:
+                    # Generate context-aware response
+                    context_prompt = self._format_context_prompt(question, tool_results)
+                    context_stream = self.llm.generate(context_prompt, stream=True)
+                    
+                    # Stream the context-aware response
+                    for chunk in context_stream:
+                        yield chunk
+            
+        except Exception as e:
+            logger.error(f"Error in streaming answer: {e}")
+            yield {
+                "type": "error",
+                "content": f"Error: {str(e)}"
             }
     
     def _create_system_prompt(self) -> str:

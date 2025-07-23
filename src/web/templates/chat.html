@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Judge Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            background: rgba(30, 30, 30, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            scroll-behavior: smooth;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 1rem;
+            position: relative;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .message.assistant .message-content {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .thinking-section {
+            background: rgba(60, 60, 60, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .thinking-header {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .thinking-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .thinking-toggle {
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+
+        .thinking-content {
+            padding: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.875rem;
+            color: #d1d5db;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .thinking-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .thinking-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .collapsed .thinking-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .rule-ref {
+            color: #60a5fa;
+            border-bottom: 1px dotted #60a5fa;
+            cursor: help;
+            position: relative;
+        }
+
+        .rule-ref:hover {
+            color: #93c5fd;
+            border-bottom-color: #93c5fd;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 20, 0.95);
+            color: #e0e0e0;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .rule-ref:hover .tooltip {
+            opacity: 1;
+        }
+
+        .input-container {
+            padding: 1rem 2rem 2rem;
+            background: rgba(30, 30, 30, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-form {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            background: rgba(50, 50, 50, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #e0e0e0;
+            font-size: 1rem;
+            resize: none;
+            max-height: 120px;
+            transition: all 0.2s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .message-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #9ca3af;
+            font-style: italic;
+            margin: 0.5rem 0;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #9ca3af;
+            animation: typingDot 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        .streaming-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: #4f46e5;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border: none;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .input-container {
+                padding: 1rem;
+            }
+            
+            .message-content {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚔️ MTG Judge Assistant</h1>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span>Ready</span>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message assistant">
+                <div class="message-content">
+                    Welcome! I'm your Magic: The Gathering judge assistant. Ask me about rules, card interactions, or any MTG questions you have. I'll search through the comprehensive rules and provide accurate rulings.
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <form class="input-form" id="messageForm">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="message-input" 
+                        id="messageInput" 
+                        placeholder="Ask about MTG rules, card interactions, or specific scenarios..."
+                        rows="1"
+                    ></textarea>
+                </div>
+                <button type="submit" class="send-button" id="sendButton">
+                    <span>Send</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class MTGJudgeChat {
+            constructor() {
+                this.chatContainer = document.getElementById('chatContainer');
+                this.messageForm = document.getElementById('messageForm');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.isStreaming = false;
+                
+                this.initializeEventListeners();
+                this.adjustTextareaHeight();
+            }
+
+            initializeEventListeners() {
+                this.messageForm.addEventListener('submit', this.handleSubmit.bind(this));
+                this.messageInput.addEventListener('input', this.adjustTextareaHeight.bind(this));
+                this.messageInput.addEventListener('keydown', this.handleKeydown.bind(this));
+            }
+
+            adjustTextareaHeight() {
+                const textarea = this.messageInput;
+                textarea.style.height = 'auto';
+                const newHeight = Math.min(textarea.scrollHeight, 120);
+                textarea.style.height = newHeight + 'px';
+            }
+
+            handleKeydown(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.handleSubmit(e);
+                }
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+                
+                const message = this.messageInput.value.trim();
+                if (!message || this.isStreaming) return;
+
+                this.addUserMessage(message);
+                this.messageInput.value = '';
+                this.adjustTextareaHeight();
+                this.setStreaming(true);
+
+                try {
+                    await this.streamAssistantResponse(message);
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.addAssistantMessage('Sorry, I encountered an error processing your question. Please try again.');
+                } finally {
+                    this.setStreaming(false);
+                }
+            }
+
+            addUserMessage(content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user';
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        ${this.escapeHtml(content)}
+                    </div>
+                `;
+                this.chatContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            async streamAssistantResponse(question) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                messageDiv.appendChild(contentDiv);
+                
+                this.chatContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+
+                try {
+                    const response = await fetch('/api/chat/stream', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ question: question })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+                    let thinking = '';
+                    let answer = '';
+                    let isInThinking = false;
+                    let thinkingDiv = null;
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    
+                                    if (data.type === 'thinking') {
+                                        if (!thinkingDiv) {
+                                            thinkingDiv = this.createThinkingSection();
+                                            contentDiv.appendChild(thinkingDiv);
+                                        }
+                                        thinking += data.content;
+                                        this.updateThinkingContent(thinkingDiv, thinking);
+                                    } else if (data.type === 'answer') {
+                                        if (thinkingDiv) {
+                                            this.finalizeThinkingSection(thinkingDiv);
+                                        }
+                                        answer += data.content;
+                                        this.updateAnswerContent(contentDiv, answer, thinkingDiv);
+                                    } else if (data.type === 'done') {
+                                        this.removeStreamingCursor(contentDiv);
+                                        return;
+                                    }
+                                    
+                                    this.scrollToBottom();
+                                } catch (e) {
+                                    console.error('Error parsing SSE data:', e);
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Streaming error:', error);
+                    contentDiv.innerHTML = 'Sorry, I encountered an error. Please try again.';
+                }
+            }
+
+            createThinkingSection() {
+                const thinkingDiv = document.createElement('div');
+                thinkingDiv.className = 'thinking-section';
+                thinkingDiv.innerHTML = `
+                    <div class="thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                        <span class="thinking-toggle">▼</span>
+                        <span>Thinking...</span>
+                    </div>
+                    <div class="thinking-content"></div>
+                `;
+                return thinkingDiv;
+            }
+
+            updateThinkingContent(thinkingDiv, content) {
+                const contentEl = thinkingDiv.querySelector('.thinking-content');
+                contentEl.textContent = content;
+                contentEl.scrollTop = contentEl.scrollHeight;
+            }
+
+            finalizeThinkingSection(thinkingDiv) {
+                const header = thinkingDiv.querySelector('.thinking-header span:last-child');
+                header.textContent = 'Reasoning (click to expand)';
+                thinkingDiv.classList.add('collapsed');
+                
+                // Auto-hide after 3 seconds
+                setTimeout(() => {
+                    thinkingDiv.style.opacity = '0.7';
+                }, 3000);
+            }
+
+            updateAnswerContent(contentDiv, answer, thinkingDiv) {
+                const answerDiv = contentDiv.querySelector('.answer-content') || this.createAnswerDiv(contentDiv, thinkingDiv);
+                const highlighted = this.highlightRules(answer);
+                // Preserve line breaks and formatting - the CSS white-space: pre-wrap will handle newlines
+                answerDiv.innerHTML = highlighted + '<span class="streaming-cursor"></span>';
+            }
+
+            createAnswerDiv(contentDiv, thinkingDiv) {
+                const answerDiv = document.createElement('div');
+                answerDiv.className = 'answer-content';
+                if (thinkingDiv) {
+                    contentDiv.insertBefore(answerDiv, thinkingDiv.nextSibling);
+                } else {
+                    contentDiv.appendChild(answerDiv);
+                }
+                return answerDiv;
+            }
+
+            removeStreamingCursor(contentDiv) {
+                const cursor = contentDiv.querySelector('.streaming-cursor');
+                if (cursor) cursor.remove();
+            }
+
+            highlightRules(text) {
+                // Highlight rule references like "Rule 123.4" or "rule 123.4a"
+                return text.replace(/\b[Rr]ule\s+(\d+(?:\.\d+[a-z]*)*)\b/g, (match, ruleNum) => {
+                    return `<span class="rule-ref" data-rule="${ruleNum}">
+                        ${match}
+                        <div class="tooltip">Click to view Rule ${ruleNum}</div>
+                    </span>`;
+                });
+            }
+
+            addAssistantMessage(content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        ${this.highlightRules(this.escapeHtml(content))}
+                    </div>
+                `;
+                this.chatContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            setStreaming(streaming) {
+                this.isStreaming = streaming;
+                this.sendButton.disabled = streaming;
+                this.messageInput.disabled = streaming;
+                
+                if (streaming) {
+                    this.sendButton.innerHTML = `
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    `;
+                } else {
+                    this.sendButton.innerHTML = `
+                        <span>Send</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                        </svg>
+                    `;
+                }
+            }
+
+            scrollToBottom() {
+                this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Initialize the chat when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new MTGJudgeChat();
+        });
+    </script>
+</body>
+</html>
