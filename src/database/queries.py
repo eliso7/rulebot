@@ -177,6 +177,30 @@ class DatabaseQueries:
             "feedback": training.feedback
         }
     
+    def get_all_rules(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get all rules from the database."""
+        query = self.session.query(Rule)
+        if limit:
+            query = query.limit(limit)
+        rules = query.all()
+        return [self._rule_to_dict(rule) for rule in rules]
+    
+    def get_all_cards(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get all cards from the database."""
+        query = self.session.query(Card)
+        if limit:
+            query = query.limit(limit)
+        cards = query.all()
+        return [self._card_to_dict(card) for card in cards]
+    
+    def get_all_rulings(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get all rulings from the database."""
+        query = self.session.query(Ruling)
+        if limit:
+            query = query.limit(limit)
+        rulings = query.all()
+        return [self._ruling_to_dict(ruling) for ruling in rulings]
+
     def get_stats(self) -> Dict[str, int]:
         """Get database statistics."""
         return {
